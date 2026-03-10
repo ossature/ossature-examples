@@ -1,0 +1,12 @@
+[project]
+name = "math_quest"
+version = "0.1.0"
+spec_dir = "specs"
+context_dir = "context"
+
+[output]
+dir = "output"
+language = "lua"
+
+[llm]
+model = "anthropic:claude-opus-4-6"

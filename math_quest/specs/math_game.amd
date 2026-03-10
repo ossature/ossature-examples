@@ -1,0 +1,134 @@
+# Architecture: Math Quest
+
+@spec: MATH_QUEST
+@status: draft
+
+## Overview
+
+Minimal LÖVE2D game structured as three Lua modules: a configuration file, a game logic module, and the main entry point that wires LÖVE callbacks to the game module. All state lives in a single game state table managed by `game.lua`.
+
+## Components
+
+### Configuration
+
+@path: conf.lua
+
+LÖVE2D configuration callback. Sets window dimensions, title, and disables unused modules.
+
+**Interface:**
+
+```lua
+-- Called by LÖVE before love.load
+function love.conf(t)
+    t.window.title = "Math Quest"
+    t.window.width = 1280
+    t.window.height = 720
+    t.window.resizable = false
+    t.modules.audio = true
+    t.modules.joystick = false
+    t.modules.physics = false
+end
+```
+
+**Depends on:** None
+
+### Game Logic
+
+@path: game.lua
+
+Core module managing all game state, problem generation, input handling, scoring, timer, audio, and rendering. Exports a table of functions called by main.lua. Loads audio assets (`correct.wav`, `wrong.ogg`) at startup and plays them in response to game events.
+
+**Interface:**
+
+```lua
+local Game = {}
+
+-- State: "title" | "playing" | "gameover"
+-- Managed internally via Game.state
+
+function Game.load()           -- Initialize state, particles, fonts, load sound effects
+function Game.update(dt)       -- Update timer, particles, feedback flash
+function Game.draw()           -- Render current state (background, UI, problem)
+function Game.keypressed(key)  -- Handle Enter (start/submit/restart), Backspace; play correct/wrong sounds on answer
+function Game.textinput(t)     -- Handle digit input (0-9)
+
+return Game
+```
+
+**Depends on:** None
+
+### Main Entry Point
+
+@path: main.lua
+
+Wires LÖVE2D callbacks to the Game module. Contains no logic of its own.
+
+**Interface:**
+
+```lua
+local Game = require("game")
+
+function love.load()           Game.load() end
+function love.update(dt)       Game.update(dt) end
+function love.draw()           Game.draw() end
+function love.keypressed(key)  Game.keypressed(key) end
+function love.textinput(t)     Game.textinput(t) end
+```
+
+**Depends on:** Game Logic
+
+## Data Models
+
+### Game State
+
+```lua
+-- Internal to game.lua, not exported
+state = {
+    mode = "title",        -- "title" | "playing" | "gameover"
+    score = 0,
+    lives = 3,
+    problem = {            -- Current problem
+        text = "12 + 34",  -- Display string
+        answer = 46,       -- Correct answer (integer)
+    },
+    input = "",            -- Player's typed digits
+    timer = 10.0,          -- Seconds remaining
+    feedback = nil,        -- { color = {r,g,b}, timer = 0.5 } or nil
+    particles = {},        -- List of background particle tables
+    sfx_correct = nil,     -- love.audio.Source ("static")
+    sfx_wrong = nil,       -- love.audio.Source ("static")
+}
+```
+
+### Particle
+
+```lua
+-- Each particle in state.particles
+{
+    x = 400, y = 300,      -- Position
+    dx = 0.5, dy = -0.3,   -- Velocity (pixels/sec)
+    r = 0.4, g = 0.6, b = 1.0,  -- Color
+    alpha = 0.7,           -- Current opacity
+    life = 5.0,            -- Seconds remaining
+    max_life = 5.0,        -- Total lifespan (for fade calc)
+    radius = 4,            -- Circle radius
+}
+```
+
+## Flow
+
+```
+love.load  → Game.load()  → init state, spawn particles, create fonts
+love.update(dt) → Game.update(dt) → update timer, particles, feedback
+love.draw  → Game.draw()  → draw particles, then draw state-specific UI
+love.keypressed → Game.keypressed(key) → state transitions, submit answer
+love.textinput  → Game.textinput(t) → append digit to input buffer
+```
+
+## Dependencies
+
+- LÖVE2D 11.x: Game framework (love.graphics, love.timer, love.math, love.audio)
+
+## Notes
+
+All game state is held in a local table inside game.lua. No global variables. The particle system is hand-rolled (a simple table of particle structs updated each frame) — do not use love.graphics.newParticleSystem. Audio assets (`correct.wav`, `wrong.ogg`) are provided in the context directory and must be present in the output directory at runtime. Sound effects are loaded as static sources.
