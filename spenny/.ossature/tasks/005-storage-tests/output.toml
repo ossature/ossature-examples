@@ -1,0 +1,6 @@
+files = [
+    "tests/test_storage.py",
+    "pyproject.toml",
+]
+success = true
+verify_output = "============================= test session starts ==============================\nplatform darwin -- Python 3.14.3, pytest-9.0.2, pluggy-1.6.0 -- /Users/beshr/src/code/ossature-examples/spenny/output/.venv/bin/python3\ncachedir: .pytest_cache\nrootdir: /Users/beshr/src/code/ossature-examples/spenny/output\nconfigfile: pyproject.toml\ncollecting ... collected 4 items\n\ntests/test_storage.py::test_load_returns_empty_default_when_file_absent PASSED [ 25%]\ntests/test_storage.py::test_save_writes_valid_pretty_printed_json PASSED [ 50%]\ntests/test_storage.py::test_load_round_trips_saved_data_correctly PASSED [ 75%]\ntests/test_storage.py::test_load_exits_with_code_1_on_corrupted_json PASSED [100%]\n\n============================== 4 passed in 0.01s ===============================\n\nwarning: The `tool.uv.dev-dependencies` field (used in `pyproject.toml`) is deprecated and will be removed in a future release; use `dependency-groups.dev` instead\nwarning: `VIRTUAL_ENV=/Users/beshr/src/code/ossature/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead"

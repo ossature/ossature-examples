@@ -1,0 +1,14 @@
+[project]
+name = "Spenny"
+version = "0.1.0"
+spec_dir = "specs"
+
+[output]
+dir = "output"
+language = "python"
+
+[llm]
+model = "mistral:devstral-latest"
+audit = "anthropic:claude-opus-4-6"
+planner = "anthropic:claude-sonnet-4-6"
+fixer = "anthropic:claude-sonnet-4-6"

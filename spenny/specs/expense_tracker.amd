@@ -1,0 +1,133 @@
+# Architecture: Expense Tracker
+
+@spec: EXPENSE_TRACKER
+@status: draft
+
+## Overview
+
+Three Python modules: a storage layer for JSON persistence, a core module for business logic, and a CLI entry point that wires argparse subcommands to core functions.
+
+## Components
+
+### Storage
+
+@path: src/spenny/storage.py
+
+Handles reading and writing the `expenses.json` file. Provides a simple load/save interface over a typed dict structure.
+
+**Interface:**
+
+```python
+from decimal import Decimal
+from typing import TypedDict
+
+class ExpenseRecord(TypedDict):
+    id: int
+    date: str          # ISO 8601 date (YYYY-MM-DD)
+    amount: str         # decimal.Decimal serialized as string for JSON precision
+    category: str
+    description: str
+
+class ExpenseData(TypedDict):
+    next_id: int
+    expenses: list[ExpenseRecord]
+
+def load(path: str = "expenses.json") -> ExpenseData: ...
+def save(data: ExpenseData, path: str = "expenses.json") -> None: ...
+```
+
+**Depends on:** None
+
+### Core
+
+@path: src/spenny/core.py
+
+Business logic for adding, listing, deleting, and summarizing expenses. Operates on the `ExpenseData` structure from storage. All functions are pure — they take data in and return results without side effects.
+
+**Interface:**
+
+```python
+from decimal import Decimal
+from typing import NamedTuple
+from spenny.storage import ExpenseData, ExpenseRecord
+
+def add_expense(
+    data: ExpenseData,
+    amount: Decimal,
+    category: str,
+    description: str = "",
+    date: str | None = None,
+) -> tuple[ExpenseData, ExpenseRecord]: ...
+
+def list_expenses(
+    data: ExpenseData,
+    category: str | None = None,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> list[ExpenseRecord]: ...
+
+def delete_expense(
+    data: ExpenseData,
+    expense_id: int,
+) -> ExpenseData: ...
+
+class SummaryResult(NamedTuple):
+    totals: dict[str, Decimal]
+    has_expenses: bool
+
+def summarize(
+    data: ExpenseData,
+    start_date: str | None = None,
+    end_date: str | None = None,
+) -> SummaryResult: ...
+```
+
+**Depends on:** Storage
+
+### CLI
+
+@path: src/spenny/cli.py
+
+Entry point. Parses arguments with `argparse`, calls core functions, formats output, handles errors. This is the only module that prints to stdout or calls `sys.exit`.
+
+**Interface:**
+
+```python
+def main() -> None: ...
+```
+
+**Depends on:** Core, Storage
+
+## Data Models
+
+### expenses.json
+
+```json
+{
+  "next_id": 4,
+  "expenses": [
+    {
+      "id": 1,
+      "date": "2026-03-01",
+      "amount": "12.50",
+      "category": "Food",
+      "description": "Lunch at cafe"
+    }
+  ]
+}
+```
+
+## Flow
+
+```
+CLI (argparse)
+  ├── add    -> core.add_expense()    -> storage.save()
+  ├── list   -> core.list_expenses()  -> print expense table
+  ├── delete -> core.delete_expense() -> storage.save()
+  └── summary -> core.summarize()     -> print summary
+```
+
+## Dependencies
+
+- Python 3.14+ standard library only (json, argparse, datetime, sys): system functionality
+- uv: project management, packaging, and running the CLI

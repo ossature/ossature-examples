@@ -1,0 +1,1 @@
+The project now builds successfully, and the `spenny` package can be imported without errors. The issue was resolved by creating the missing `README.md` file.

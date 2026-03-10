@@ -1,0 +1,5 @@
+files = [
+    "src/spenny/storage.py",
+]
+success = true
+verify_output = "warning: The `tool.uv.dev-dependencies` field (used in `pyproject.toml`) is deprecated and will be removed in a future release; use `dependency-groups.dev` instead\nwarning: `VIRTUAL_ENV=/Users/beshr/src/code/ossature/.venv` does not match the project environment path `.venv` and will be ignored; use `--active` to target the active environment instead"
