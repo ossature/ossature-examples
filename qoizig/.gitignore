@@ -1,0 +1,10 @@
+# Ossature
+.ossature/
+
+# OS
+.DS_Store
+
+# Zig
+.zig-cache/
+zig-out/
+*.o

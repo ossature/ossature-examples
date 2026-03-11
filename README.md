@@ -8,6 +8,7 @@ All specification documents for the examples provided in this repo are licensed 
 
 - [Spenny](#spenny): CLI expense tracker, written in Python
 - [Math Quest](#math-quest): Children's arithmetic game, built with LÖVE2D (Lua)
+- [Qoizig](#qoizig): QOI image format encoder/decoder, written in Zig
 
 ## What to Look For
 
@@ -109,3 +110,20 @@ love .
 ```
 
 ![Math Quest gameplay](assets/math_quest.gif)
+
+## Qoizig
+
+Qoizig is a high-performance, zero-dependency command-line tool and library implemented in Zig for the [QOI (Quite OK Image)](https://qoiformat.org/) format. It provides encoding and decoding capabilities for QOI files — a fast, lossless image format. The tool converts between QOI and standard image formats (PPM P6 for RGB, PAM P7 for RGBA), strictly adhering to the QOI specification for byte-ordering, chunk compression, and pixel history states. The [QOI specification](https://qoiformat.org/qoi-specification.pdf) is provided as context in the `context/` directory.
+
+The project is configured to use `anthropic:claude-opus-4-6` for all tasks.
+
+The project is fully validated, audited, and built. See [What to Look For](#what-to-look-for) to explore the `.ossature/` directory, and check `output/` for the generated code.
+
+To test run the built code (requires [Zig](https://ziglang.org/) 0.15.2+):
+
+```bash
+cd qoizig/output
+zig build
+./zig-out/bin/qoizig encode input.ppm output.qoi
+./zig-out/bin/qoizig decode output.qoi decoded.pam
+```

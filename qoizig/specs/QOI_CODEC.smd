@@ -1,0 +1,202 @@
+# Qoizig
+
+@id: QOI_CODEC
+@status: draft
+@priority: high
+@depends: []
+
+## Overview
+
+A high-performance, zero-dependency command-line tool and library implemented in Zig 0.15.2+ for the QOI (Quite OK Image) format. The tool provides encoding and decoding capabilities for QOI files, which are fast, lossless image formats. The implementation strictly adheres to the QOI specification, managing byte-ordering, chunk compression, and pixel history states without external dependencies.
+
+## Goals
+
+- Implement a fully compliant QOI encoder and decoder in Zig.
+- Use only the Zig standard library (no third-party packages).
+- Provide a CLI for converting between QOI and standard formats (PPM/PAM).
+- Optimize for speed and minimal memory overhead.
+- Ensure robust handling of Big Endian serialization required by the QOI spec.
+
+## Non-Goals
+
+- Support for color profiles (ICC) or metadata chunks beyond the QOI specification.
+- Image manipulation (resizing, filtering) outside of codec operations.
+- GUI integration.
+- Support for QOI Op extensions not in the main specification.
+
+## Requirements
+
+### QOI Format Fundamentals
+
+The implementation must handle the QOI file format, which consists of a 14-byte header, data chunks, and an 8-byte end marker.
+
+**Accepts:**
+- Raw pixel data (as an array of RGBA or RGB values) for encoding.
+- A QOI byte stream for decoding.
+
+**Returns:**
+- A QOI byte stream when encoding.
+- Raw pixel data when decoding.
+
+**Header Structure:**
+- `char[4]` magic: "qoif" (0x71, 0x6f, 0x69, 0x66)
+- `u32` width: image width in pixels (BE)
+- `u32` height: image height in pixels (BE)
+- `u8` channels: 3 = RGB, 4 = RGBA
+- `u8` colorspace: 0 = sRGB with linear alpha, 1 = all channels linear
+
+The `colorspace` and `channels` fields are purely informative and do not change how data chunks are encoded.
+
+**End Marker:**
+- 0x00 00 00 00 00 00 00 01 (7 zero bytes + 0x01)
+
+**Pixel State:**
+The codec must maintain an array of the previously seen pixels `index[64]` to facilitate the `QOI_OP_INDEX` operation. The position index is calculated as:
+
+$$ \text{pos} = (r \times 3 + g \times 5 + b \times 7 + a \times 11) \pmod{64} $$
+
+### Encode Command (`qoizig encode`)
+
+Reads a source image file (PPM P6 for RGB, PAM P7 for RGBA) and encodes it into a QOI file.
+
+**Accepts:**
+- `input` (positional, required): Path to the source PPM/PAM file.
+- `output` (positional, required): Path for the resulting QOI file.
+
+Channel count is auto-detected from the input format: PPM P6 implies 3 (RGB), PAM P7 implies 4 (RGBA).
+
+**Returns:**
+- A QOI file written to disk.
+- A stdout message: `Encoded {width}x{height} image to {output}`.
+
+**Behavior:**
+1. Parse input file header (PPM/PAM).
+2. Allocate `QoiHeader` and fill metadata.
+3. Initialize pixel history `index[64]` to rgba(0,0,0,0). Initialize `previous_pixel` to `{r: 0, g: 0, b: 0, a: 255}`.
+4. Iterate through pixels (Left to Right, Top to Bottom):
+   - Calculate `pos` hash.
+   - **Run check**: If current pixel matches `previous_pixel`, increment run counter. If run == 62 or next pixel differs, write `QOI_OP_RUN` (tag `b11`, 6-bit run with bias of -1, so run 1 is stored as 0) and reset run. Run-lengths 63 and 64 are illegal (reserved for QOI_OP_RGB/RGBA tags).
+   - **Index check**: If current pixel matches `index[pos]`, write `QOI_OP_INDEX` (tag `b00`, 6-bit index). A valid encoder must not issue 2 or more consecutive QOI_OP_INDEX chunks to the same index; use QOI_OP_RUN instead.
+   - **Diff check**: If `dr`, `dg`, `db` are each in [-2, 1] and alpha is unchanged, write `QOI_OP_DIFF` (tag `b01`, 2-bit per channel with bias of 2, e.g. -2 stored as 0, 1 stored as 3). Differences use wraparound: `1 - 2 = 255`, `255 + 1 = 0`.
+   - **Luma check**: If `dg` is in [-32, 31] and `dr-dg`, `db-dg` are in [-8, 7] and alpha is unchanged, write `QOI_OP_LUMA` (tag `b10`, 6-bit green diff with bias of 32, 4-bit red/blue diffs with bias of 8). Differences use wraparound.
+   - **Fallback**: Write `QOI_OP_RGB` (tag `0xFE`, 3 bytes) if only RGB changed, or `QOI_OP_RGBA` (tag `0xFF`, 4 bytes) if alpha also changed.
+5. Update `index[pos]` and `previous_pixel`.
+6. Write 8-byte End Marker.
+7. Ensure all integer writes to the output are Big Endian.
+
+**Errors:**
+- Input file not found -> print error and exit code 1.
+- Invalid PPM/PAM header -> print error and exit code 1.
+- Mismatch between declared size and actual data -> print error and exit code 1.
+
+### Decode Command (`qoizig decode`)
+
+Reads a QOI file and decodes it to a standard image format (PPM P6 for RGB, PAM P7 for RGBA).
+
+**Accepts:**
+- `input` (positional, required): Path to the QOI file.
+- `output` (positional, required): Path for the resulting image file.
+
+Output format is automatically determined from the QOI header's `channels` field: PPM P6 if channels=3, PAM P7 if channels=4.
+
+**Returns:**
+- A PPM or PAM file written to disk.
+- A stdout message: `Decoded {width}x{height} image to {output}`.
+
+**Behavior:**
+1. Read and validate the 14-byte header (check magic "qoif").
+2. Initialize output buffer, pixel index array (zero-initialized), and `previous_pixel` to `{r: 0, g: 0, b: 0, a: 255}`.
+3. Loop until all `width * height` pixels are decoded:
+   - Read byte `b1`.
+   - **Check 8-bit tags first** (they have precedence over 2-bit tags):
+     - `QOI_OP_RGB` (`0xFE`): Read next 3 bytes as r, g, b. Alpha unchanged.
+     - `QOI_OP_RGBA` (`0xFF`): Read next 4 bytes as r, g, b, a.
+   - Then check 2-bit tags (top 2 bits of `b1`):
+     - `QOI_OP_INDEX` (`b00`): Read pixel from `index[b1 & 0x3F]`.
+     - `QOI_OP_DIFF` (`b01`): Extract 2-bit diffs (subtract bias of 2), apply wraparound add to `previous_pixel`. Alpha unchanged.
+     - `QOI_OP_LUMA` (`b10`): Extract 6-bit green diff (subtract bias of 32), read second byte for 4-bit dr-dg and db-dg (subtract bias of 8), compute and apply diffs with wraparound. Alpha unchanged.
+     - `QOI_OP_RUN` (`b11`): Repeat `previous_pixel` for `(b1 & 0x3F) + 1` times (bias of -1).
+   - After decoding each pixel, update `index[hash]` and `previous_pixel`.
+4. Write decoded pixel data to output file in specified format.
+5. Handle Big Endian reads from the input file.
+
+**Errors:**
+- Invalid Magic Bytes -> print error "Not a QOI file" and exit code 1.
+- Truncated file / Unexpected EOF -> print error and exit code 1.
+- Invalid stream of chunks -> print error and exit code 1.
+
+### Standard Library Helpers
+
+Since Zig 0.15.2 is required, the following standard library features must be utilized:
+
+**Accepts:**
+- N/A (these are internal utilities, not user-facing inputs).
+
+**Returns:**
+- N/A (these are internal utilities used by the encoder and decoder).
+
+- **Byte Order**: `std.mem.readIntBig` and `std.mem.writeIntBig` for u32 fields.
+- **Allocation**: `std.heap.ArenaAllocator` for temporary buffer management during image processing.
+- **IO**: `std.fs.File` for read/write operations.
+
+## Constraints
+
+- Target Zig version: 0.15.2 or higher.
+- No external dependencies.
+- The output QOI file must be exactly 14 bytes (header) + data chunks + 8 bytes (end marker).
+- Pixel channel differences must use **unsigned 8-bit wraparound arithmetic** (e.g. `1 - 2 = 255`, `255 + 1 = 0`). Color channels are assumed to be un-premultiplied alpha.
+- An image is complete when all `width * height` pixels have been covered; the decoder must not rely solely on the end marker to determine completion.
+- Memory mapping is optional but preferred for large files to ensure speed.
+
+## Examples
+
+### Encoding a PPM to QOI
+
+**Input:**
+
+```
+qoizig encode assets/dice.ppm dice.qoi
+```
+
+**Output:**
+
+```
+Encoded 800x600 image to dice.qoi
+```
+
+### Decoding a QOI to PAM (RGBA)
+
+**Input:**
+
+```
+qoizig decode dice.qoi dice_rgba.pam
+```
+
+**Output:**
+
+```
+Decoded 800x600 image to dice_rgba.pam
+```
+
+### Handling Errors
+
+**Input:**
+
+```
+qoizig encode corrupt.txt out.qoi
+```
+
+**Output:**
+
+```
+Error: Invalid PPM/PAM header
+```
+
+## Acceptance Criteria
+
+- Encoder produces QOI files verifiable by the reference [qoibench](https://github.com/phoboslab/qoi) implementation.
+- Decoder successfully reconstructs pixels from the reference QOI test suite.
+- All Big Endian integers (width, height, specific chunks) are serialized correctly.
+- The pixel index hash function produces identical looking results to the reference spec.
+- End marker is correctly appended to every encoded file.
+- Exit code 0 on success, 1 on CLI argument or file processing errors.

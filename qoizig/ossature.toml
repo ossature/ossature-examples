@@ -1,0 +1,18 @@
+# Ossature Configuration
+# https://github.com/ossature/ossature
+
+[project]
+name = "qoizig"
+version = "0.0.1"
+spec_dir = "specs"
+context_dir = "context"
+
+[output]
+dir = "output"
+language = "zig"
+
+[build]
+setup = "zig init -m"
+
+[llm]
+model = "anthropic:claude-opus-4-6"
