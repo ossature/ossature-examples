@@ -1,0 +1,5 @@
+files = [
+    "src/web.rs",
+]
+success = true
+verify_output = "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s"

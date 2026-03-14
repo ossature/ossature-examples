@@ -1,0 +1,22 @@
+{
+  "findings": [
+    {
+      "severity": "warning",
+      "location": "Requirements > list subcommand, Errors",
+      "issue": "The spec states that search filtering is performed via a 'query' argument, but does not define what fields are searched (URL, description, tags, all of them?) or what matching logic is used (substring, regex, exact match?). Two implementations could reasonably differ in search behavior and produce incompatible results.",
+      "suggestion": "Clarify the search scope ('query matches URL, description, and tags') and the matching algorithm ('case-insensitive substring matching')."
+    },
+    {
+      "severity": "warning",
+      "location": "Requirements > remove subcommand, Errors",
+      "issue": "The spec requires printing 'error: id must be a positive integer' for 'missing or non-integer id', but does not explicitly state that id must be *positive* (>0) as a constraint. An implementation could accept 0 or negative integers without violating the non-integer check, creating incompatible behavior.",
+      "suggestion": "Clarify: should id validation reject zero and negative integers? If so, update the error message to reflect range validation, or define the valid id range explicitly."
+    },
+    {
+      "severity": "info",
+      "location": "Requirements > list subcommand, Returns",
+      "issue": "The output format includes 'tags: <tags>' but it is unclear whether empty tags should display as 'tags: ' (with no tag values) or be omitted entirely. The example shows a bookmark with tags, but no example of a bookmark without tags.",
+      "suggestion": "Add an example showing a bookmark with no tags to clarify the output format (e.g., does '[1] https://example.com | Example site | tags: ' or '[1] https://example.com | Example site' appear?)."
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+files = [
+    "src/storage.rs",
+    "src/lib.rs",
+    "src/storage/mod.rs",
+    "src/storage/types.rs",
+    "src/storage/memory.rs",
+    "src/storage/memory_tests.rs",
+    "src/main.rs",
+]
+success = true
+verify_output = "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.03s"

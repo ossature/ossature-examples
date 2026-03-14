@@ -1,0 +1,8 @@
+files = [
+    "src/commands/remove.rs",
+    "src/commands/mod.rs",
+    "src/lib.rs",
+    "src/main.rs",
+]
+success = true
+verify_output = "Checking markman v0.1.0 (/Users/beshr/src/code/ossature-examples/markman/output)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s"
