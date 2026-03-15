@@ -1,0 +1,3 @@
+[sources]
+"./specs/QOI_CODEC.smd" = "sha256:fdf3e70206cf5f879cd536c913ba9835e5b251bc7bc0694aecaa4c89bb5e7227"
+"ossature.toml" = "sha256:1e5259ebe4d17cf498595d9b9766d8e7acb490586e1b54be3eeaab995d8a9556"

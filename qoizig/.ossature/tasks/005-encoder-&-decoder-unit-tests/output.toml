@@ -1,0 +1,6 @@
+files = [
+    "src/codec_test.zig",
+    "build.zig",
+]
+success = true
+verify_output = "Build Summary: 7/7 steps succeeded; 92/92 tests passed\ntest success\n+- run test 12 passed 1ms MaxRSS:1M\n|  +- compile test Debug native cached 44ms MaxRSS:34M\n+- run test success 1ms MaxRSS:1M\n|  +- compile test Debug native cached 44ms MaxRSS:34M\n+- run test 80 passed 3ms MaxRSS:2M\n   +- compile test Debug native cached 44ms MaxRSS:34M"

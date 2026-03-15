@@ -1,0 +1,6 @@
+files = [
+    "src/integration_test.zig",
+    "build.zig",
+]
+success = true
+verify_output = "Build Summary: 14/14 steps succeeded; 237/237 tests passed\ntest success\n+- run test 12 passed 1ms MaxRSS:1M\n|  +- compile test Debug native cached 68ms MaxRSS:34M\n+- run test success 1ms MaxRSS:1M\n|  +- compile test Debug native cached 67ms MaxRSS:34M\n+- run test 80 passed 3ms MaxRSS:2M\n|  +- compile test Debug native cached 66ms MaxRSS:34M\n+- run test 70 passed 2ms MaxRSS:2M\n|  +- compile test Debug native cached 68ms MaxRSS:34M\n+- run test 75 passed 31ms MaxRSS:3M\n   +- compile test Debug native cached 67ms MaxRSS:34M\n   +- install cached\n      +- install qoizig cached\n         +- compile exe qoizig Debug native cached 66ms MaxRSS:34M"

@@ -1,0 +1,71 @@
+# .ossature/state.toml — Build state (auto-generated, do not edit)
+
+[tasks.001]
+input_hash = "sha256:590c7c86708f0bab0d83f17ffa209e3079de333a028e83f7adbca81a057b761a"
+output_hash = "sha256:3e7462242d80b86c5bbd57b71aa7dae27a677329ba2c6939fb0cad9728b543f6"
+written_files = [
+    "build.zig",
+    "src/qoi.zig",
+    "src/main.zig",
+    "test_io.zig",
+]
+
+[tasks.002]
+input_hash = "sha256:ca2bc16586c67ece33866d42472eca00894bd22287994c1c5c98d5e9a2e9fa41"
+output_hash = "sha256:6a742dc469a71f1153b0bbbdde96eb05275024b288ee42a962b9206adefff976"
+written_files = [
+    "src/qoi.zig",
+]
+
+[tasks.003]
+input_hash = "sha256:28a3f21da429edb7f03ba1defeb4b6d77eebab2196700a40d4bdb34059bdc198"
+output_hash = "sha256:df00ff52de3d39099b4466f0f78f275e5704a80ac69d56b72f50379efe4bc4b5"
+written_files = [
+    "src/encoder.zig",
+]
+
+[tasks.004]
+input_hash = "sha256:ffcc9dfb9fe0a2efaa2f2b81f1b1ab2dd04a11d3e533409e8a173a5592620bb5"
+output_hash = "sha256:c58c1bc0e3a53cf2bf726c2a08b8fe8892c9fb64a8b1920926557cbfa23d8fa0"
+written_files = [
+    "src/decoder.zig",
+]
+
+[tasks.005]
+input_hash = "sha256:b0b9e9d9f0f701f6eed0fc2dae47c73a70871d2dafd75fb13158d5246a1095b9"
+output_hash = "sha256:592df34fab0da96099b1fe3aa6c0f011b8584e00ecc41111cb5f1ecb0d748061"
+written_files = [
+    "src/codec_test.zig",
+    "build.zig",
+]
+
+[tasks.006]
+input_hash = "sha256:cf3455ef53665183e85fbe13ef0882c3e86bcd0ec6d05ae65d12e380453b80e2"
+output_hash = "sha256:bed176b3c44bb17a322b262125ae5adb09e125422e36c691d74abd3da09f0f72"
+written_files = [
+    "src/image_io.zig",
+]
+
+[tasks.007]
+input_hash = "sha256:8f728a70f30038b7ae316a231f0b9055c43aa52e3ff445e1dc16430071a862f6"
+output_hash = "sha256:3e208b8d3f281de6ba2ee310c40dd406da2d09f31256025c13bebb16d653a198"
+written_files = [
+    "src/image_io_test.zig",
+    "build.zig",
+]
+
+[tasks.008]
+input_hash = "sha256:e88c872ba323c45208c308689f3af72e3e1aed5c79d2793f98a74edde46d7035"
+output_hash = "sha256:0d9c5c9c3f7b8a2b14246cce23d413ca627940ffc8e02df2d6a3aec663e3f0bc"
+written_files = [
+    "src/main.zig",
+    "src/qoi.zig",
+]
+
+[tasks.009]
+input_hash = "sha256:19947fb543ee5f5b6b624fdefca7e485379d90edf71489dfe19eb4df50746b73"
+output_hash = "sha256:2e4cde44cdd369bd12bac176fbda7aa378aed6728fcaed6e37f57c2d6342111d"
+written_files = [
+    "src/integration_test.zig",
+    "build.zig",
+]
