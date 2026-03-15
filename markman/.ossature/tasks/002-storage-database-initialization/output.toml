@@ -1,0 +1,6 @@
+files = [
+    "src/storage.rs",
+    "Cargo.toml",
+]
+success = true
+verify_output = "Checking cfg-if v1.0.4\n    Checking once_cell v1.21.4\n    Checking bitflags v2.11.0\n    Checking smallvec v1.15.1\n    Checking fallible-iterator v0.3.0\n    Checking fallible-streaming-iterator v0.1.9\n    Checking zerocopy v0.8.42\n    Checking libsqlite3-sys v0.28.0\n    Checking ahash v0.8.12\n    Checking hashbrown v0.14.5\n    Checking hashlink v0.9.1\n    Checking rusqlite v0.31.0\n    Checking markman v0.1.0 (/Users/beshr/src/code/ossature-examples/markman/output)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 1.45s"

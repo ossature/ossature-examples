@@ -1,0 +1,11 @@
+files = [
+    "Cargo.toml",
+    "src/web/mod.rs",
+    "src/web/serve.rs",
+    "src/lib.rs",
+    "src/main.rs",
+    "assets/index.html",
+    "src/storage/types.rs",
+]
+success = true
+verify_output = "Checking itoa v1.0.17\n    Checking once_cell v1.21.4\n    Checking pin-project-lite v0.2.17\n    Checking bytes v1.11.1\n    Checking futures-core v0.3.32\n    Checking smallvec v1.15.1\n    Checking scopeguard v1.2.0\n    Checking libc v0.2.183\n    Checking tower-service v0.3.3\n    Checking log v0.4.29\n    Checking serde_core v1.0.228\n    Checking tower-layer v0.3.3\n    Checking slab v0.4.12\n    Checking lock_api v0.4.14\n    Checking futures-task v0.3.32\n    Checking futures-channel v0.3.32\n    Checking httparse v1.10.1\n    Checking tracing-core v0.1.36\n    Checking ahash v0.8.12\n    Checking sync_wrapper v1.0.2\n    Checking httpdate v1.0.3\n    Checking atomic-waker v1.1.2\n    Checking futures-util v0.3.32\n    Checking percent-encoding v2.3.2\n    Checking pin-utils v0.1.0\n    Checking zmij v1.0.21\n    Checking mime v0.3.17\n    Checking ryu v1.0.23\n    Checking memchr v2.8.0\n    Checking matchit v0.7.3\n    Checking hashbrown v0.14.5\n    Checking form_urlencoded v1.2.2\n    Checking tracing v0.1.44\n    Checking clap v4.6.0\n    Checking http v1.4.0\n    Checking parking_lot_core v0.9.12\n    Checking errno v0.3.14\n    Checking mio v1.1.1\n    Checking socket2 v0.6.3\n    Checking tower v0.4.13\n    Checking signal-hook-registry v1.4.8\n    Checking parking_lot v0.12.5\n    Checking hashlink v0.9.1\n    Checking tokio v1.50.0\n    Checking rusqlite v0.31.0\n    Checking http-body v1.0.1\n    Checking http-body-util v0.1.3\n    Checking tower-http v0.5.2\n    Checking serde v1.0.228\n    Checking serde_path_to_error v0.1.20\n    Checking serde_json v1.0.149\n    Checking axum-core v0.4.5\n    Checking serde_urlencoded v0.7.1\n    Checking hyper v1.8.1\n    Checking tower v0.5.3\n    Checking hyper-util v0.1.20\n    Checking axum v0.7.9\n    Checking markman v0.1.0 (/Users/beshr/src/code/ossature-examples/markman/output)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 2.94s"

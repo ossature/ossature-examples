@@ -1,0 +1,19 @@
+# Ossature Configuration
+# https://github.com/ossature/ossature
+
+[project]
+name = "markman"
+version = "0.0.1"
+spec_dir = "specs"
+context_dir = "context"
+
+[output]
+dir = "output"
+language = "rust"
+
+[build]
+setup = "cargo init --name markman"
+verify = "cargo check"
+
+[llm]
+model = "anthropic:claude-haiku-4-5-20251001"

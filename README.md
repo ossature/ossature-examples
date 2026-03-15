@@ -9,6 +9,7 @@ All specification documents for the examples provided in this repo are licensed 
 - [Spenny](#spenny): CLI expense tracker, written in Python
 - [Math Quest](#math-quest): Children's arithmetic game, built with LÖVE2D (Lua)
 - [Qoizig](#qoizig): QOI image format encoder/decoder, written in Zig
+- [Markman](#markman): CLI bookmark manager with a web UI, written in Rust
 
 ## What to Look For
 
@@ -126,4 +127,34 @@ cd qoizig/output
 zig build
 ./zig-out/bin/qoizig encode input.ppm output.qoi
 ./zig-out/bin/qoizig decode output.qoi decoded.pam
+```
+
+## Markman
+
+Markman is a command-line bookmark manager written in Rust. It stores bookmarks in a local SQLite database (defaulting to `~/.markman.db`) and supports adding, listing, searching, and removing bookmarks via subcommands. It also includes a `serve` subcommand that starts a minimal, read-only web UI for browsing and searching bookmarks in a browser — all HTML and CSS are embedded in the binary with no external assets or JavaScript required. The project uses `clap` for CLI parsing, `rusqlite` (with the `bundled` feature) for SQLite storage, and `tiny_http` for the web server.
+
+The project is configured to use `anthropic:claude-haiku-4-5-20251001` for all tasks.
+
+The project is fully validated, audited, and built. See [What to Look For](#what-to-look-for) to explore the `.ossature/` directory, and check `output/` for the generated code.
+
+To test run the built code (requires [Rust](https://www.rust-lang.org/)):
+
+```bash
+cd markman/output
+cargo run -- --help
+```
+
+```
+Usage: markman [OPTIONS] <COMMAND>
+
+Commands:
+  add     Add a new bookmark
+  list    List or search bookmarks
+  remove  Remove a bookmark by id
+  serve   Start the web UI server
+  help    Print this message or the help of the given subcommand(s)
+
+Options:
+      --db <PATH>  Path to the database file [default: ~/.markman.db]
+  -h, --help       Print help
 ```
