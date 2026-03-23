@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "whenwords-py"
+version = "0.0.1"
+description = "Pure Python functions for human-friendly date and time formatting."
+readme = "README.md"
+requires-python = ">=3.12"
+license = { text = "MIT" }
+authors = [
+    { name = "Author Name", email = "author@example.com" }
+]
+classifiers = [
+    "Programming Language :: Python :: 3.12",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+Homepage = "https://github.com/example/whenwords-py"
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

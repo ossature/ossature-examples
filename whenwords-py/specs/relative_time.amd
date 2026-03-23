@@ -1,0 +1,69 @@
+# Architecture: Relative Time
+
+@spec: RELATIVE_TIME
+@status: draft
+
+## Overview
+
+Two Python modules: a core library with all pure functions and a test file driven by tests.yaml.
+
+## Components
+
+### Relative Time Module
+
+@path: src/whenwords/relative.py
+
+All relative-time functions: timeago, duration, parse_duration. Pure functions with no side effects.
+
+**Interface:**
+
+```python
+from datetime import datetime
+from typing import TypedDict
+
+class DurationOptions(TypedDict, total=False):
+    compact: bool
+    max_units: int
+
+def timeago(timestamp: int | float | str | datetime,
+            reference: int | float | str | datetime | None = None) -> str: ...
+
+def duration(seconds: int | float,
+             options: DurationOptions | None = None) -> str: ...
+
+def parse_duration(text: str) -> int | float: ...
+```
+
+**Depends on:** None
+
+### Relative Time Tests
+
+@path: tests/test_relative.py
+
+Test file that loads test cases from tests.yaml and runs them against the relative time functions. Covers timeago, duration, and parse_duration sections.
+
+**Interface:**
+
+```python
+import pytest
+
+# Test functions are generated from tests.yaml
+# Each test case becomes a parameterized test
+```
+
+**Depends on:** Relative Time Module
+
+## Flow
+
+```
+test_relative.py
+  ├── loads tests.yaml
+  ├── timeago tests   -> relative.timeago()
+  ├── duration tests  -> relative.duration()
+  └── parse_duration tests -> relative.parse_duration()
+```
+
+## Dependencies
+
+- stdlib: Python 3.12+ standard library only, no third-party runtime dependencies
+- pytest: test runner for parameterized test cases

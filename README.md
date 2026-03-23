@@ -10,6 +10,7 @@ All specification documents for the examples provided in this repo are licensed 
 - [Math Quest](#math-quest): Children's arithmetic game, built with LÖVE2D (Lua)
 - [Qoizig](#qoizig): QOI image format encoder/decoder, written in Zig
 - [Markman](#markman): CLI bookmark manager with a web UI, written in Rust
+- [whenwords-py](#whenwords-py): Human-friendly time formatting library, written in Python
 
 ## What to Look For
 
@@ -157,4 +158,23 @@ Commands:
 Options:
       --db <PATH>  Path to the database file [default: ~/.markman.db]
   -h, --help       Print help
+```
+
+## whenwords-py
+
+whenwords-py is a Python implementation of [whenwords](https://github.com/dbreunig/whenwords), Drew Breunig's "open source library without code" — a language-agnostic spec and test suite for human-friendly time formatting and parsing. The original project ships only a specification (`SPEC.md`) and test cases (`tests.yaml`), with no implementation code. This example takes that spec and converts it into Ossature SMD/AMD specifications, then uses Ossature to generate a fully working Python library.
+
+The library provides five pure functions: `timeago` converts timestamps to relative strings like "3 hours ago" or "in 2 days"; `duration` formats seconds into readable durations like "1 hour, 30 minutes" or "1h 30m"; `parse_duration` parses human-written strings like "2 hours and 30 minutes" back into seconds; `human_date` returns contextual labels like "Today", "Yesterday", or "Last Friday"; and `date_range` formats date ranges with smart abbreviation like "March 5–7, 2024". All functions are pure — no side effects, no system clock access, no I/O.
+
+The original whenwords spec is available at [https://github.com/dbreunig/whenwords/blob/main/SPEC.md](https://github.com/dbreunig/whenwords/blob/main/SPEC.md) and the test cases are copied from the repo into `context/tests.yaml`. The specs were translated into two Ossature specs: `RELATIVE_TIME` (timeago, duration, parse_duration) and `CALENDAR_FORMAT` (human_date, date_range), each with a corresponding AMD defining the module layout.
+
+The project is configured to use `mistral:devstral-latest` for all tasks.
+
+The project is fully validated, audited, and built. See [What to Look For](#what-to-look-for) to explore the `.ossature/` directory, and check `output/` for the generated code.
+
+To test run the built code:
+
+```bash
+cd whenwords-py/output
+uv run pytest
 ```

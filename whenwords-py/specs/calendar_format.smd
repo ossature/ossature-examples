@@ -1,0 +1,180 @@
+# Calendar Format
+
+@id: CALENDAR_FORMAT
+@status: draft
+@priority: high
+@depends: []
+
+## Overview
+
+Pure functions for contextual calendar date formatting. Converts timestamps into human-friendly date strings like "Today", "Yesterday", "Last Friday", or "March 5, 2024", and formats date ranges with smart abbreviation like "March 5–7, 2024".
+
+All functions are pure — no side effects, no I/O, no system clock access. The reference timestamp is always passed explicitly. All timestamps are interpreted in UTC by default.
+
+## Goals
+
+- Format timestamps as contextual date strings relative to a reference date
+- Format date ranges with intelligent abbreviation (eliding repeated month/year)
+- English output only (v0.1)
+
+## Non-Goals
+
+- Timezone conversion (interpret all timestamps in UTC; timezone parameter may be added in future versions)
+- Locale or i18n support
+- Relative time strings like "3 hours ago" (see RELATIVE_TIME spec)
+- Package distribution scaffolding
+
+## Constraints
+
+- Python 3.12+ standard library only, no third-party dependencies
+- All timestamps are Unix seconds (integer or float); also accept `datetime` objects and ISO 8601 strings
+- Strings are UTF-8
+- Deterministic: same inputs always produce same output
+- All calendar calculations use UTC
+- Use en-dash (–) for date range separators, not hyphen (-)
+
+## Requirements
+
+### human_date
+
+Return a contextual date string describing when a timestamp falls relative to a reference date. Prioritizes human-friendly labels ("Today", "Yesterday", "Last Friday") over raw dates.
+
+**Accepts:** timestamp (Unix seconds, datetime, or ISO 8601 string), reference (Unix seconds, datetime, or ISO 8601 string)
+
+**Returns:** A contextual date string
+
+**Errors:**
+
+- Invalid timestamp format -> raise ValueError with descriptive message
+
+Day boundaries are computed in UTC. The rules in priority order:
+
+| Condition | Output |
+|-----------|--------|
+| Same calendar day | "Today" |
+| Previous calendar day | "Yesterday" |
+| Next calendar day | "Tomorrow" |
+| 2–6 days in the past | "Last {weekday}" (e.g. "Last Friday") |
+| 2–6 days in the future | "This {weekday}" (e.g. "This Wednesday") |
+| Same calendar year | "{Month} {day}" (e.g. "March 1") |
+| Different calendar year | "{Month} {day}, {year}" (e.g. "January 1, 2023") |
+
+Weekday names are full English names: Monday, Tuesday, Wednesday, Thursday, Friday, Saturday, Sunday. Month names are full English names: January through December. Day numbers have no leading zeros.
+
+### date_range
+
+Format a start and end timestamp as a human-readable date range with smart abbreviation. Elides repeated components (month, year) when they are the same for start and end.
+
+**Accepts:** start (Unix seconds, datetime, or ISO 8601 string), end (Unix seconds, datetime, or ISO 8601 string)
+
+**Returns:** A formatted date range string
+
+**Errors:**
+
+- Invalid timestamp format -> raise ValueError with descriptive message
+
+Formatting rules:
+
+| Condition | Output |
+|-----------|--------|
+| Same calendar day | "{Month} {day}, {year}" (e.g. "January 15, 2024") |
+| Same month and year | "{Month} {day}–{day}, {year}" (e.g. "January 15–22, 2024") |
+| Same year, different months | "{Month} {day} – {Month} {day}, {year}" (e.g. "January 15 – February 15, 2024") |
+| Different years | "{Month} {day}, {year} – {Month} {day}, {year}" (e.g. "December 28, 2023 – January 15, 2024") |
+
+Edge cases: if start equals end, treat as single day. If start is after end, swap them silently. Use en-dash (–) as the range separator. Same-month ranges use no spaces around the en-dash; cross-month and cross-year ranges use spaces around the en-dash.
+
+## Examples
+
+### human_date today
+
+**Input:**
+
+```
+human_date(1705276800, reference=1705276800)
+```
+
+**Output:**
+
+```
+Today
+```
+
+### human_date last weekday
+
+**Input:**
+
+```
+human_date(1705104000, reference=1705276800)
+```
+
+**Output:**
+
+```
+Last Saturday
+```
+
+### human_date different year
+
+**Input:**
+
+```
+human_date(1672531200, reference=1705276800)
+```
+
+**Output:**
+
+```
+January 1, 2023
+```
+
+### date_range same month
+
+**Input:**
+
+```
+date_range(1705276800, 1705881600)
+```
+
+**Output:**
+
+```
+January 15–22, 2024
+```
+
+### date_range different years
+
+**Input:**
+
+```
+date_range(1703721600, 1705276800)
+```
+
+**Output:**
+
+```
+December 28, 2023 – January 15, 2024
+```
+
+### date_range swapped
+
+**Input:**
+
+```
+date_range(1705881600, 1705276800)
+```
+
+**Output:**
+
+```
+January 15–22, 2024
+```
+
+## Acceptance Criteria
+
+- All human_date and date_range test cases from tests.yaml pass
+- Functions accept `datetime` objects and ISO 8601 strings in addition to Unix timestamps
+- Errors raise `ValueError` with descriptive messages
+- En-dash (–) is used for range separators, not hyphen
+- Swapped start/end inputs are auto-corrected silently
+- Day/month names are full English words with no abbreviations
