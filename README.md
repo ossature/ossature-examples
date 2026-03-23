@@ -6,11 +6,13 @@ All specification documents for the examples provided in this repo are licensed 
 
 ## Currently Available Examples
 
-- [Spenny](#spenny): CLI expense tracker, written in Python
-- [Math Quest](#math-quest): Children's arithmetic game, built with LÖVE2D (Lua)
-- [Qoizig](#qoizig): QOI image format encoder/decoder, written in Zig
-- [Markman](#markman): CLI bookmark manager with a web UI, written in Rust
-- [whenwords-py](#whenwords-py): Human-friendly time formatting library, written in Python
+| Example | Description | Language | Models |
+|---------|-------------|----------|--------|
+| [Spenny](spenny/) | CLI expense tracker | Python | Opus (audit), Sonnet (planner/fixer), Devstral (build) |
+| [Math Quest](math_quest/) | Children's arithmetic game | LÖVE2D (Lua) | Opus |
+| [Qoizig](qoizig/) | QOI image format encoder/decoder | Zig | Opus |
+| [Markman](markman/) | CLI bookmark manager with web UI | Rust | Haiku |
+| [whenwords-py](whenwords-py/) | Human-friendly time formatting library | Python | Devstral |
 
 ## What to Look For
 
@@ -59,122 +61,4 @@ ossature audit
 ossature build
 ```
 
----
 
-## Spenny
-
-Spenny is a command-line expense tracker written in Python. It's designed to be simple, fast, and dependency-free, using only Python's standard library with data stored in a human-readable JSON file (`expenses.json`). It supports adding, listing, deleting, and summarizing expenses, with filtering by category and date range. Each expense includes an amount, category, optional description, auto-generated ID, and a timestamp. It uses `argparse` for CLI parsing with subcommands and adheres to strict error handling with clear messages and appropriate exit codes.
-
-The project is configured to use `anthropic:claude-opus-4-6` for audit, `anthropic:claude-sonnet-4-6` for planning and fixer loops, and `mistral:devstral-latest` for code generation and all other tasks.
-
-The project is fully validated, audited, and built. See [What to Look For](#what-to-look-for) to explore the `.ossature/` directory, and check `output/` for the generated code.
-
-To test run the built code:
-
-```bash
-cd spenny/output
-uv run spenny --help
-```
-
-```
-usage: spenny [-h] {add,list,delete,summary} ...
-
-Spenny: A simple command-line expense tracker
-
-positional arguments:
-  {add,list,delete,summary}
-    add                 Add a new expense
-    list                List expenses
-    delete              Delete an expense
-    summary             Show spending summary
-
-options:
-  -h, --help            show this help message and exit
-```
-
-## Math Quest
-
-Math Quest is a children's arithmetic game built with LÖVE2D (Lua) that presents progressively difficult math problems and accepts typed numeric answers. The game starts the player with a fixed number of lives and generates arithmetic problems that increase in difficulty as the player's score rises. Players type their answers using the keyboard, receiving immediate feedback through sound effects loaded from provided audio assets.
-
-The project is configured to use `anthropic:claude-opus-4-6` for everything.
-
-Two audio assets downloaded from [OpenGameArt](https://opengameart.org/) (licensed under CC0) are provided as context:
-- `context/correct.wav`: Correct answer sound — Source: [Point Bell](https://opengameart.org/content/point-bell)
-- `context/wrong.ogg`: Wrong answer sound — Source: [Error](https://opengameart.org/content/error)
-
-The project is fully validated, audited, and built. See [What to Look For](#what-to-look-for) to explore the `.ossature/` directory, and check `output/` for the generated code.
-
-To test run the built game (make sure you've downloaded [LÖVE2D](https://love2d.org/) first):
-
-```bash
-cd math_quest/output
-love .
-```
-
-![Math Quest gameplay](assets/math_quest.gif)
-
-## Qoizig
-
-Qoizig is a high-performance, zero-dependency command-line tool and library implemented in Zig for the [QOI (Quite OK Image)](https://qoiformat.org/) format. It provides encoding and decoding capabilities for QOI files — a fast, lossless image format. The tool converts between QOI and standard image formats (PPM P6 for RGB, PAM P7 for RGBA), strictly adhering to the QOI specification for byte-ordering, chunk compression, and pixel history states. The [QOI specification](https://qoiformat.org/qoi-specification.pdf) is provided as context in the `context/` directory.
-
-The project is configured to use `anthropic:claude-opus-4-6` for all tasks.
-
-The project is fully validated, audited, and built. See [What to Look For](#what-to-look-for) to explore the `.ossature/` directory, and check `output/` for the generated code.
-
-To test run the built code (requires [Zig](https://ziglang.org/) 0.15.2+):
-
-```bash
-cd qoizig/output
-zig build
-./zig-out/bin/qoizig encode input.ppm output.qoi
-./zig-out/bin/qoizig decode output.qoi decoded.pam
-```
-
-## Markman
-
-Markman is a command-line bookmark manager written in Rust. It stores bookmarks in a local SQLite database (defaulting to `~/.markman.db`) and supports adding, listing, searching, and removing bookmarks via subcommands. It also includes a `serve` subcommand that starts a minimal, read-only web UI for browsing and searching bookmarks in a browser — all HTML and CSS are embedded in the binary with no external assets or JavaScript required. The project uses `clap` for CLI parsing, `rusqlite` (with the `bundled` feature) for SQLite storage, and `tiny_http` for the web server.
-
-The project is configured to use `anthropic:claude-haiku-4-5-20251001` for all tasks.
-
-The project is fully validated, audited, and built. See [What to Look For](#what-to-look-for) to explore the `.ossature/` directory, and check `output/` for the generated code.
-
-To test run the built code (requires [Rust](https://www.rust-lang.org/)):
-
-```bash
-cd markman/output
-cargo run -- --help
-```
-
-```
-Usage: markman [OPTIONS] <COMMAND>
-
-Commands:
-  add     Add a new bookmark
-  list    List or search bookmarks
-  remove  Remove a bookmark by id
-  serve   Start the web UI server
-  help    Print this message or the help of the given subcommand(s)
-
-Options:
-      --db <PATH>  Path to the database file [default: ~/.markman.db]
-  -h, --help       Print help
-```
-
-## whenwords-py
-
-whenwords-py is a Python implementation of [whenwords](https://github.com/dbreunig/whenwords), Drew Breunig's "open source library without code" — a language-agnostic spec and test suite for human-friendly time formatting and parsing. The original project ships only a specification (`SPEC.md`) and test cases (`tests.yaml`), with no implementation code. This example takes that spec and converts it into Ossature SMD/AMD specifications, then uses Ossature to generate a fully working Python library.
-
-The library provides five pure functions: `timeago` converts timestamps to relative strings like "3 hours ago" or "in 2 days"; `duration` formats seconds into readable durations like "1 hour, 30 minutes" or "1h 30m"; `parse_duration` parses human-written strings like "2 hours and 30 minutes" back into seconds; `human_date` returns contextual labels like "Today", "Yesterday", or "Last Friday"; and `date_range` formats date ranges with smart abbreviation like "March 5–7, 2024". All functions are pure — no side effects, no system clock access, no I/O.
-
-The original whenwords spec is available at [https://github.com/dbreunig/whenwords/blob/main/SPEC.md](https://github.com/dbreunig/whenwords/blob/main/SPEC.md) and the test cases are copied from the repo into `context/tests.yaml`. The specs were translated into two Ossature specs: `RELATIVE_TIME` (timeago, duration, parse_duration) and `CALENDAR_FORMAT` (human_date, date_range), each with a corresponding AMD defining the module layout.
-
-The project is configured to use `mistral:devstral-latest` for all tasks.
-
-The project is fully validated, audited, and built. See [What to Look For](#what-to-look-for) to explore the `.ossature/` directory, and check `output/` for the generated code.
-
-To test run the built code:
-
-```bash
-cd whenwords-py/output
-uv run pytest
-```
