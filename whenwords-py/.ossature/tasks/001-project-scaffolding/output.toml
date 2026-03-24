@@ -1,0 +1,7 @@
+files = [
+    "pyproject.toml",
+    "src/whenwords/__init__.py",
+    "tests/__init__.py",
+]
+success = true
+verify_output = ""

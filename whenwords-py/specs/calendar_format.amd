@@ -1,0 +1,61 @@
+# Architecture: Calendar Format
+
+@spec: CALENDAR_FORMAT
+@status: draft
+
+## Overview
+
+Two Python modules: a core library with calendar formatting functions and a test file driven by tests.yaml.
+
+## Components
+
+### Calendar Format Module
+
+@path: src/whenwords/calendar.py
+
+Calendar date formatting functions: human_date and date_range. Pure functions with no side effects. All calendar calculations use UTC.
+
+**Interface:**
+
+```python
+from datetime import datetime
+
+def human_date(timestamp: int | float | str | datetime,
+               reference: int | float | str | datetime) -> str: ...
+
+def date_range(start: int | float | str | datetime,
+               end: int | float | str | datetime) -> str: ...
+```
+
+**Depends on:** None
+
+### Calendar Format Tests
+
+@path: tests/test_calendar.py
+
+Test file that loads test cases from tests.yaml and runs them against the calendar format functions. Covers human_date and date_range sections.
+
+**Interface:**
+
+```python
+import pytest
+
+# Test functions are generated from tests.yaml
+# Each test case becomes a parameterized test
+```
+
+**Depends on:** Calendar Format Module
+
+## Flow
+
+```
+test_calendar.py
+  ├── loads tests.yaml
+  ├── human_date tests   -> calendar.human_date()
+  └── date_range tests   -> calendar.date_range()
+```
+
+## Dependencies
+
+- stdlib: Python 3.12+ standard library only, no third-party runtime dependencies
+- pytest: test runner for parameterized test cases

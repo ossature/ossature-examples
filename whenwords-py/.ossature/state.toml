@@ -1,0 +1,49 @@
+# .ossature/state.toml — Build state (auto-generated, do not edit)
+
+[tasks.001]
+input_hash = "sha256:a42a32a51a23848c29e16e3d05f220756aa61410454ec8598714b44c243ef225"
+output_hash = "sha256:57aa900b137980dce44c28e7991dcfc48dcdb1f31d247f21d4d8e6d746154934"
+written_files = [
+    "pyproject.toml",
+    "src/whenwords/__init__.py",
+    "tests/__init__.py",
+]
+
+[tasks.002]
+input_hash = "sha256:d1106cf1d9247752ba2d3507f1db8a9d634d018db2c24d2deceec6d630cda866"
+output_hash = "sha256:b328a2bdc79f0f548d465821b5a475188b5d5f7b9a0d2816971a56eafd6891c2"
+written_files = [
+    "src/whenwords/calendar.py",
+]
+
+[tasks.003]
+input_hash = "sha256:89ceb9eae6f59e7972665ce857b5e24c7ae224b8bfb7ee10982c6691fcdc84f8"
+output_hash = "sha256:cc3584e53029d8c4a332ba5c6f2f61fa62d1e21362890a554e6d858c9f6f7825"
+written_files = [
+    "tests/test_calendar.py",
+    "src/whenwords/calendar.py",
+]
+
+[tasks.004]
+input_hash = "sha256:cd18dded0ce51687dbd7c104110dc03f0c892a1fd9a8db4d8458190066959697"
+output_hash = "sha256:ff3e1229f09f31c634226181fab382d9962aece6057019d028a9168efff86eb7"
+written_files = [
+    "tests/__init__.py",
+    "src/whenwords/__init__.py",
+]
+
+[tasks.005]
+input_hash = "sha256:37dd193cc21cb2438da5a0f06249fea04bf3a7ff482a7fb92571c720be50deca"
+output_hash = "sha256:4205520fc311bc2f68ee03fc78d4e2f60ebde0b38801098b7f633c922cbbbac7"
+written_files = [
+    "src/whenwords/relative.py",
+    "src/whenwords/__init__.py",
+]
+
+[tasks.006]
+input_hash = "sha256:22579cc33f38c079e665599a5a58da73e991cb244140108ae7e2818b388490dd"
+output_hash = "sha256:aecf95748388aa9b6407369236fa26d7305923eb4f56ec1b9069bb9e0a9c81d0"
+written_files = [
+    "tests/test_relative.py",
+    "src/whenwords/relative.py",
+]
