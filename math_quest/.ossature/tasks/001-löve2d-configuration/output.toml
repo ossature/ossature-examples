@@ -1,5 +1,0 @@
-files = [
-    "conf.lua",
-]
-success = true
-verify_output = ""

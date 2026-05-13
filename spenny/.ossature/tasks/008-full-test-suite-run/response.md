@@ -1,1 +1,0 @@
-Perfect! All tests pass, and the CLI entry point is correctly installed and functional.

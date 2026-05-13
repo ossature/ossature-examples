@@ -1,9 +1,10 @@
+---
+id: RELATIVE_TIME
+status: draft
+priority: high
+depends: []
+---
 # Relative Time
-
-@id: RELATIVE_TIME
-@status: draft
-@priority: high
-@depends: []
 
 ## Overview
 

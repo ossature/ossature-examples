@@ -1,9 +1,10 @@
+---
+id: WEBUI
+status: draft
+priority: high
+depends: [STORAGE]
+---
 # Web UI
-
-@id: WEBUI
-@status: draft
-@priority: high
-@depends: [STORAGE]
 
 ## Overview
 

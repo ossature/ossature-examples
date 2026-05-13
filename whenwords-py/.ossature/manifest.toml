@@ -1,6 +1,0 @@
-[sources]
-"./specs/calendar_format.smd" = "sha256:e46cc997012aeb20a728144a0a8240a0d15b2031b679895a0dbb751317052366"
-"./specs/relative_time.smd" = "sha256:612bdec2cf7a40ecdc57146e0ce45bd2063875063c394226e3c0c2250aa2ac0a"
-"./specs/calendar_format.amd" = "sha256:24a34173787c49ac093b3f6cd70c4dcf3487b2c0938576cde175e3416c4ddcf5"
-"./specs/relative_time.amd" = "sha256:a35ce17367c77c262b30a4e4109dd18c46d799887f26cf9ca71801a26c5b66ac"
-"ossature.toml" = "sha256:50e127740989a00a65dc66e8bde6c0e9740066e1ba1e11d4bfc5035b3d6a8911"

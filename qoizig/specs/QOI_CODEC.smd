@@ -1,9 +1,10 @@
+---
+id: QOI_CODEC
+status: draft
+priority: high
+depends: []
+---
 # Qoizig
-
-@id: QOI_CODEC
-@status: draft
-@priority: high
-@depends: []
 
 ## Overview
 

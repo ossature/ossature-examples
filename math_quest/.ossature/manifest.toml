@@ -1,4 +1,0 @@
-[sources]
-"./specs/math_game.smd" = "sha256:15301aae7f050d3c5f6b0537cab1e6892bfd9b269b0ddcf39945433b6b89a263"
-"./specs/math_game.amd" = "sha256:b6e6d3d8d44545c458069d795aeb5889989b9df7915d058b60b58865ea0e7f87"
-"ossature.toml" = "sha256:729a9e05cb9bf2d0e2c14a58d5c8b5a31b2e07455542798c3fac6d063b5de756"

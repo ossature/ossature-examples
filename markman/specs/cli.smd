@@ -1,9 +1,10 @@
+---
+id: CLI
+status: draft
+priority: high
+depends: [STORAGE]
+---
 # CLI
-
-@id: CLI
-@status: draft
-@priority: high
-@depends: [STORAGE]
 
 ## Overview
 

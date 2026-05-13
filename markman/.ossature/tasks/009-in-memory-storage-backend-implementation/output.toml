@@ -1,6 +1,0 @@
-files = [
-    "src/storage/memory.rs",
-    "src/storage/mod.rs",
-]
-success = true
-verify_output = "Checking markman v0.1.0 (/Users/beshr/src/code/ossature-examples/markman/output)\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.08s"

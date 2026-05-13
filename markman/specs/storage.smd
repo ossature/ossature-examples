@@ -1,9 +1,10 @@
+---
+id: STORAGE
+status: draft
+priority: critical
+depends: []
+---
 # Storage
-
-@id: STORAGE
-@status: draft
-@priority: critical
-@depends: []
 
 ## Overview
 

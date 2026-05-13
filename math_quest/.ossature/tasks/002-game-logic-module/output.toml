@@ -1,8 +1,0 @@
-files = [
-    "wrong.ogg",
-    "correct.wav",
-    "main.lua",
-    "game.lua",
-]
-success = true
-verify_output = ""

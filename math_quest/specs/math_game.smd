@@ -1,9 +1,10 @@
+---
+id: MATH_QUEST
+status: draft
+priority: high
+depends: []
+---
 # Math Quest — A Math Game for Kids
-
-@id: MATH_QUEST
-@status: draft
-@priority: high
-@depends: []
 
 ## Overview
 
