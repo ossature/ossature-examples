@@ -1,0 +1,5 @@
+created_files = [
+    "src/spenny/core.py",
+]
+success = true
+verify_output = "$ python -m py_compile src/spenny/core.py\n$ python -c \"from spenny.core import add_expense, list_expenses, delete_expense, summarize, SummaryResult\""

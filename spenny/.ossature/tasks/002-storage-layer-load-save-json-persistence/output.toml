@@ -1,0 +1,7 @@
+created_files = [
+    "src/spenny/storage.py",
+    "src/__init__.py",
+    "README.md",
+]
+success = true
+verify_output = "$ python -m py_compile src/spenny/storage.py\n$ python -c \"from spenny.storage import load, save, ExpenseData, ExpenseRecord\""

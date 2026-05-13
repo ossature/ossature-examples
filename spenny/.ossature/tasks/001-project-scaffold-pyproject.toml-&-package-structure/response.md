@@ -1,0 +1,3 @@
+### Summary of Changes
+- **pyproject.toml**: Created the project metadata file with build configuration, project details, and entry point for the CLI (`spenny.cli:main`). The file specifies Python 3.14+ as the minimum version and uses `uv` for dependency management.
+- **src/spenny/__init__.py**: Created the package initialization file with the version string and a brief docstring. This ensures the package is importable and adheres to Python conventions.
