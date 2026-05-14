@@ -1,0 +1,1 @@
+Provides SQLite-backed persistence for bookmarks, where each record stores a URL, description, and comma-separated tags. Exposes CRUD operations that return `Result<T, StorageError>` with typed error variants, leaving error display and process termination to callers. Both the CLI and web UI depend exclusively on this module for all database interaction.

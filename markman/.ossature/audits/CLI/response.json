@@ -1,0 +1,28 @@
+{
+  "findings": [
+    {
+      "severity": "warning",
+      "location": "Requirements > serve subcommand, L66",
+      "issue": "The `serve` subcommand defines its own `--db` flag as a local override, but the global `--db` flag (L78) already applies to all subcommands. It is ambiguous whether `serve` has two separate `--db` flags (one global, one local), whether the local one shadows the global, or whether the local one is redundant. Two implementors could produce incompatible CLI surfaces — one with a duplicated/conflicting flag, one that omits the local flag entirely.",
+      "suggestion": "Clarify whether the `--db` in the `serve` subcommand definition is intentionally a subcommand-level override that takes precedence over the global flag, or whether it is simply a reminder that the global `--db` applies. If the global flag already covers all subcommands, remove the per-subcommand mention to avoid ambiguity."
+    },
+    {
+      "severity": "warning",
+      "location": "Requirements > remove subcommand, L53 and L59",
+      "issue": "The `id` argument is typed as `i64` (L53), but the error message says 'id must be a positive integer' (L59). It is ambiguous whether a negative or zero i64 value is a valid input that should produce an application-level error, or whether the type constraint itself (i64 vs u64/usize) is intentional and only non-integer strings are rejected by the parser. Two implementors could differ: one accepts `-5` and then errors at the storage layer; another rejects it at parse time with code 2.",
+      "suggestion": "Specify explicitly whether negative or zero values for `id` should be rejected at the CLI layer (exit code 2) or passed through to storage. If only positive integers are valid, consider typing the argument as a positive integer (e.g., NonZeroU64) or add an explicit validation step with a defined exit code."
+    },
+    {
+      "severity": "info",
+      "location": "Requirements > list subcommand, L43",
+      "issue": "The output format for tags in the list subcommand (`tags: example,test`) is shown in the example (L108), but it is not specified what is printed when a bookmark has no tags — whether it renders as `tags: ` (empty string), `tags: none`, or is omitted. This is a minor display ambiguity.",
+      "suggestion": "Specify the display format for a bookmark with an empty tags field, e.g., 'tags: ' (empty) or a placeholder like 'tags: -'."
+    },
+    {
+      "severity": "info",
+      "location": "Requirements > serve subcommand > Errors, L72",
+      "issue": "The spec defines only one error case for `serve` (port in use). It is unspecified what happens if the database path is invalid or inaccessible when the server starts — no error behavior or exit code is defined for this case, even though the serve subcommand depends on storage.",
+      "suggestion": "Add an error case for database initialization failure in the `serve` subcommand (e.g., invalid path, permission denied), specifying the error message format and exit code, consistent with how other subcommands handle storage errors."
+    }
+  ]
+}

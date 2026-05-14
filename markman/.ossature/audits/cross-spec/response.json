@@ -1,0 +1,22 @@
+{
+  "findings": [
+    {
+      "severity": "warning",
+      "specs": [
+        "CLI",
+        "WEBUI"
+      ],
+      "issue": "The CLI's `serve` subcommand is responsible for starting the web UI server, but neither spec defines the interface between them — specifically, how the CLI passes the resolved database path to the web server. The CLI accepts a `--db <path>` override, but WEBUI's spec makes no mention of receiving a database path at startup. If implemented independently, CLI might pass the path as a constructor argument while WEBUI expects a global/config mechanism, or WEBUI might hardcode a default path ignoring the CLI-provided one.",
+      "suggestion": "Explicitly specify in either the CLI or WEBUI spec (or both) how the database path is communicated to the web server at startup — e.g., as a function argument to an `fn start_server(db_path: PathBuf)` entry point. This ensures both teams agree on the handoff contract for the `serve` subcommand."
+    },
+    {
+      "severity": "info",
+      "specs": [
+        "CLI",
+        "WEBUI"
+      ],
+      "issue": "WEBUI is described as a 'read-only' interface exposing only `GET /` and `GET /health`, but the CLI spec lists `add`, `list`, and `remove` as the full set of mutating operations. There is no ambiguity in ownership of mutations, but the WEBUI spec does not reference the STORAGE `Search Bookmarks` requirement by name, leaving it implicit that `GET /` uses STORAGE's search capability. A team implementing WEBUI in isolation might not realise search/filter functionality is expected on the index page.",
+      "suggestion": "Add a note in the WEBUI spec that `GET /` should support bookmark browsing/searching via STORAGE's Search Bookmarks function, to make the dependency on that specific STORAGE capability explicit."
+    }
+  ]
+}

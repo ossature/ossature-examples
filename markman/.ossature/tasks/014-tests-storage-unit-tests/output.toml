@@ -1,0 +1,8 @@
+created_files = [
+    "src/storage/tests.rs",
+]
+success = true
+verify_output = "running 15 tests\ntest storage::tests::test_add_empty_url_returns_invalid_input ... ok\ntest storage::tests::test_query_filters_by_tags ... ok\ntest storage::tests::test_db_creation ... ok\ntest storage::tests::test_add_and_search_round_trip ... ok\ntest storage::tests::test_query_filters_by_url ... ok\ntest storage::tests::test_query_filters_by_desc ... ok\ntest storage::tests::test_query_is_case_insensitive ... ok\ntest storage::tests::test_query_no_match_returns_empty ... ok\ntest storage::tests::test_list_all_returns_empty_when_no_bookmarks ... ok\ntest storage::tests::test_add_with_empty_desc_and_tags ... ok\ntest storage::tests::test_duplicate_url_returns_duplicate_error ... ok\ntest storage::tests::test_empty_query_returns_all ... ok\ntest storage::tests::test_remove_unknown_id_returns_not_found ... ok\ntest storage::tests::test_remove_existing_bookmark ... ok\ntest storage::tests::test_remove_does_not_affect_other_bookmarks ... ok\n\ntest result: ok. 15 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.00s\n\n\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.01s\n     Running unittests src/main.rs (target/debug/deps/markman-3c9683ba2c5b7fa0)"
+edited_files = [
+    "src/storage/mod.rs",
+]

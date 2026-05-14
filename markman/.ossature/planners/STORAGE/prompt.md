@@ -1,9 +1,14 @@
+# Project: markman v0.0.1 (rust)
+
+## Specification (SMD)
+
 ---
 id: STORAGE
 status: draft
 priority: critical
 depends: []
 ---
+
 # Storage
 
 ## Overview
@@ -29,14 +34,11 @@ Opens (or creates) the SQLite database file at the given path and creates the `b
 
 **Accepts:** db_path (string — absolute or relative path to `.db` file)
 
-**Returns:** `Result<Connection, StorageError>` — an open database connection handle on success, or an error if the file cannot be opened (`StorageError::Open`) or if the schema cannot be created after a successful open (`StorageError::Init`)
-
-**Connection-lifetime model:** The caller owns the returned `Connection` for the duration of the process and passes it to every subsequent storage call. This module targets the CLI use-case: one connection is opened once at startup, used for all operations, and dropped on exit. The web UI is **out of scope** for this module; if a web server is added in the future, connection sharing (e.g. wrapping in a `Mutex` or using a connection pool) must be specified in a separate module spec, as `rusqlite::Connection` is neither `Send` nor `Clone`.
+**Returns:** `Result<Connection, StorageError>` — an open database connection handle on success, or `StorageError::Open(reason)` if the path is not writable or the database cannot be opened
 
 **Errors:**
 
 - Path is not writable or cannot be opened -> returns `StorageError::Open(reason)`; caller prints "error: cannot open database at <path>: <reason>" and exits with code 1
-- `CREATE TABLE` statement fails after a successful open (e.g., corrupt database, permission revoked mid-session) -> returns `StorageError::Init(reason)`; caller prints "error: cannot initialize database: <reason>" and exits with code 1
 
 ### Add Bookmark
 
@@ -58,7 +60,7 @@ Returns all bookmarks whose url, desc, or tags fields contain the query string (
 
 **Accepts:** conn (Connection), query (string, may be empty)
 
-**Returns:** `Result<Vec<Bookmark>, StorageError>` — list of bookmark rows on success, each containing: id (i64), url (string), desc (string), tags (string), created_at (UTC datetime string in `YYYY-MM-DD HH:MM:SS` format, space-separated as returned directly by SQLite `datetime('now')` — e.g. `"2026-01-01 00:00:00"`)
+**Returns:** `Result<Vec<Bookmark>, StorageError>` — list of bookmark rows on success, each containing: id (i64), url (string), desc (string), tags (string), created_at (UTC datetime string in `YYYY-MM-DD HH:MM:SS` format as stored by SQLite `datetime('now')`)
 
 **Errors:**
 
@@ -97,7 +99,7 @@ search("")
 **Output:**
 
 ```
-[Bookmark { id: 1, url: "https://example.com", desc: "Example site", tags: "example,test", created_at: "2026-01-01 00:00:00" }]
+[Bookmark { id: 1, url: "https://example.com", desc: "Example site", tags: "example,test", created_at: "2026-01-01T00:00:00" }]
 ```
 
 ### Search by Tag
@@ -111,13 +113,31 @@ search("test")
 **Output:**
 
 ```
-[Bookmark { id: 1, url: "https://example.com", desc: "Example site", tags: "example,test", created_at: "2026-01-01 00:00:00" }]
+[Bookmark { id: 1, url: "https://example.com", desc: "Example site", tags: "example,test", created_at: "2026-01-01T00:00:00" }]
 ```
 
 ## Acceptance Criteria
 
-- [ ] Database file is created on first run if absent
-- [ ] Duplicate URL insertion returns an error
-- [ ] Search with empty query returns all rows
-- [ ] Search with non-empty query filters correctly across url, desc, and tags
-- [ ] Remove with unknown id returns an error
+- [ ] [ ] Database file is created on first run if absent
+- [ ] [ ] Duplicate URL insertion returns an error
+- [ ] [ ] Search with empty query returns all rows
+- [ ] [ ] Search with non-empty query filters correctly across url, desc, and tags
+- [ ] [ ] Remove with unknown id returns an error
+
+## Notes
+
+
+
+## Audit Findings (avoid these issues in planning)
+
+- [WARNING] Requirements > Search Bookmarks, L57: The spec states results are ordered by `created_at` descending when the query is empty, but does not specify the ordering when a non-empty query is provided. Two implementers could reasonably choose different orderings (e.g., insertion order, ascending created_at, or relevance), producing different user-visible output.
+- [WARNING] Requirements > Search Bookmarks, L57: The spec says 'case-insensitive ASCII substring match using SQLite `LIKE`', but SQLite's `LIKE` is only case-insensitive for ASCII alphabetic characters (A-Z) by default — it is case-sensitive for non-ASCII Unicode characters. This boundary condition is not acknowledged, so an implementer might add `PRAGMA case_sensitive_like` or a custom collation while another relies on SQLite's default, producing different results for non-ASCII queries.
+- [WARNING] Requirements > Add Bookmark, L52: The duplicate-URL detection is described as a returned `StorageError::Duplicate`, but it is not specified whether this check is performed in Rust before the INSERT (e.g., a prior SELECT) or by relying on the SQLite UNIQUE constraint violation. These approaches differ in behavior under concurrent writes (though the spec is single-connection/CLI). More critically, if detection is via the UNIQUE constraint, the error must be distinguished from a generic `StorageError::Db`, and the spec does not describe how to identify the constraint violation from `rusqlite`'s error type.
+- [INFO] Requirements > Initialize Database > Connection-lifetime model, L34: The spec notes that `rusqlite::Connection` is neither `Send` nor `Clone` and defers web UI connection sharing to a future spec. However, the function signatures use `conn (Connection)` by value in subsequent calls (e.g., Add Bookmark, Search Bookmarks, Remove Bookmark at L45, L59, L71). Passing `Connection` by value would consume it on the first call, making subsequent calls impossible. The intent is almost certainly to pass by shared or mutable reference, but this is not stated.
+
+## Build Setup Command
+The following setup command runs before the first task:
+```
+['cargo init --name markman']
+```
+Do not generate tasks that duplicate what this command does.

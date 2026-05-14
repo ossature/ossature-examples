@@ -1,0 +1,193 @@
+{
+  "tasks": [
+    {
+      "kind": "task",
+      "title": "Cargo.toml: dependencies & metadata",
+      "description": "Update Cargo.toml with all required dependencies: clap (derive feature), rusqlite (or equivalent for storage), and any web framework needed for the serve subcommand. Sets edition, version, and binary name.",
+      "outputs": [
+        "Cargo.toml"
+      ],
+      "depends_on": [],
+      "spec_refs": [
+        "Overview",
+        "Constraints"
+      ],
+      "arch_refs": [],
+      "verify": [
+        "test -f Cargo.toml"
+      ],
+      "context_files": []
+    },
+    {
+      "kind": "task",
+      "title": "Storage: data types & error definitions",
+      "description": "Define the core `Bookmark` struct and `StorageError` enum used by the storage layer and consumed by the CLI. Placed in `src/storage/types.rs`.",
+      "outputs": [
+        "src/storage/types.rs"
+      ],
+      "depends_on": [
+        1
+      ],
+      "spec_refs": [
+        "add subcommand",
+        "list subcommand",
+        "remove subcommand"
+      ],
+      "arch_refs": [],
+      "verify": [
+        "cargo check"
+      ],
+      "context_files": []
+    },
+    {
+      "kind": "task",
+      "title": "Storage: SQLite backend",
+      "description": "Implement `src/storage/mod.rs` with the `Storage` struct that opens/creates a SQLite database at a given path, and exposes `add`, `list`, and `remove` methods. Errors map to `StorageError`. Default path resolves to `~/.markman.db`.",
+      "outputs": [
+        "src/storage/mod.rs"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "spec_refs": [
+        "add subcommand",
+        "list subcommand",
+        "remove subcommand",
+        "Constraints"
+      ],
+      "arch_refs": [],
+      "verify": [
+        "cargo check"
+      ],
+      "context_files": []
+    },
+    {
+      "kind": "task",
+      "title": "Web: serve stub",
+      "description": "Implement `src/web/mod.rs` with a `serve` function that binds to the given port, prints the listening message to stdout, and blocks serving requests. Handles port-already-in-use error by printing to stderr and exiting with code 1.",
+      "outputs": [
+        "src/web/mod.rs"
+      ],
+      "depends_on": [
+        1,
+        3
+      ],
+      "spec_refs": [
+        "serve subcommand"
+      ],
+      "arch_refs": [],
+      "verify": [
+        "cargo check"
+      ],
+      "context_files": []
+    },
+    {
+      "kind": "task",
+      "title": "CLI: argument definitions via clap derive",
+      "description": "Implement `src/cli.rs` defining the top-level `Cli` struct and `Commands` enum (add, list, remove, serve) using clap derive macros. Includes global `--db` flag, all subcommand arguments, and appropriate defaults. Resolves the `--db` ambiguity for `serve` by relying solely on the global `--db` flag (no duplicate local flag).",
+      "outputs": [
+        "src/cli.rs"
+      ],
+      "depends_on": [
+        1
+      ],
+      "spec_refs": [
+        "Overview",
+        "add subcommand",
+        "list subcommand",
+        "remove subcommand",
+        "serve subcommand",
+        "Constraints"
+      ],
+      "arch_refs": [],
+      "verify": [
+        "cargo check"
+      ],
+      "context_files": []
+    },
+    {
+      "kind": "task",
+      "title": "CLI: main entrypoint & dispatch",
+      "description": "Implement `src/main.rs` that parses CLI args using the `Cli` struct, resolves the database path (global `--db` or `~/.markman.db`), and dispatches to the appropriate storage or web functions. Handles output formatting for each subcommand: `added: <url>`, `[<id>] <url> | <desc> | tags: <tags>`, `removed: <id>`, and `listening on http://0.0.0.0:<port>`. Applies correct exit codes for all error cases. For `remove`, non-positive i64 values (zero or negative) are rejected at parse/validation time with code 2 matching the 'positive integer' error message.",
+      "outputs": [
+        "src/main.rs"
+      ],
+      "depends_on": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "spec_refs": [
+        "Overview",
+        "add subcommand",
+        "list subcommand",
+        "remove subcommand",
+        "serve subcommand",
+        "Constraints",
+        "Examples",
+        "Acceptance Criteria"
+      ],
+      "arch_refs": [],
+      "verify": [
+        "cargo build"
+      ],
+      "context_files": []
+    },
+    {
+      "kind": "task",
+      "title": "Tests: storage unit tests",
+      "description": "Add unit tests in `src/storage/tests.rs` (or inline in `src/storage/mod.rs`) covering add, list, list-with-query, remove, duplicate-URL error, and unknown-id error using an in-memory or temp-file SQLite database.",
+      "outputs": [
+        "src/storage/tests.rs"
+      ],
+      "depends_on": [
+        1,
+        2,
+        3
+      ],
+      "spec_refs": [
+        "add subcommand",
+        "list subcommand",
+        "remove subcommand",
+        "Acceptance Criteria"
+      ],
+      "arch_refs": [],
+      "verify": [
+        "cargo test storage"
+      ],
+      "context_files": []
+    },
+    {
+      "kind": "task",
+      "title": "Tests: CLI integration tests",
+      "description": "Add integration tests in `tests/cli.rs` that invoke the compiled binary with various argument combinations and assert stdout/stderr content and exit codes for all subcommands including edge cases (missing url, bad id, no bookmarks found).",
+      "outputs": [
+        "tests/cli.rs"
+      ],
+      "depends_on": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "spec_refs": [
+        "add subcommand",
+        "list subcommand",
+        "remove subcommand",
+        "serve subcommand",
+        "Acceptance Criteria",
+        "Examples"
+      ],
+      "arch_refs": [],
+      "verify": [
+        "cargo test --test cli"
+      ],
+      "context_files": []
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+created_files = [
+    "src/web.rs",
+    "src/web/mod.rs",
+]
+success = true
+verify_output = "Checking utf8-width v0.1.8\n    Checking urlencoding v2.1.3\n    Checking html-escape v0.2.13\n    Checking markman v0.0.1 (/Users/beshr/src/code/ossature-examples/markman/output)\nwarning: field `created_at` is never read\n --> src/storage/types.rs:9:9\n  |\n4 | pub struct Bookmark {\n  |            -------- field in this struct\n...\n9 |     pub created_at: String,\n  |         ^^^^^^^^^^\n  |\n  = note: `Bookmark` has derived impls for the traits `Clone` and `Debug`, but these are intentionally ignored during dead code analysis\n  = note: `#[warn(dead_code)]` on by default\n\nwarning: function `run` is never used\n   --> src/web/mod.rs:194:8\n    |\n194 | pub fn run(addr: &str, conn: Connection) {\n    |        ^^^\n\nwarning: `markman` (bin \"markman\") generated 2 warnings\n    Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.32s"

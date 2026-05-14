@@ -1,0 +1,129 @@
+# Project: markman v0.0.1 (rust)
+
+## Specification (SMD)
+
+---
+id: WEBUI
+status: draft
+priority: high
+depends: [STORAGE]
+---
+
+# Web UI
+
+## Overview
+
+Minimal read-only HTTP server that lets users browse and search bookmarks in a browser. All HTML and CSS are embedded in the binary as string constants — no external files required at runtime. No JavaScript. No authentication.
+
+## Goals
+
+- Serve a single-page HTML interface for viewing and searching bookmarks
+- Ship as a fully self-contained binary with no external static assets
+
+## Non-Goals
+
+- No add, edit, or remove via the web UI
+- No authentication or access control
+- No JavaScript, no external CSS frameworks or fonts
+
+## Requirements
+
+### GET /
+
+Returns the full HTML page. If the `q` query parameter is present and non-empty, only bookmarks matching the query (case-insensitive substring match against url, desc, or tags) are shown. If `q` is absent or empty, all bookmarks are shown ordered by insertion time descending.
+
+**Accepts:** q (query string parameter, optional, string)
+
+**Returns:** HTTP 200 with `Content-Type: text/html; charset=utf-8`. Body is a complete HTML document containing: a text input pre-filled with `q`, a submit button, and a table listing each bookmark's URL (as a clickable `<a>` link), description, and tags. If no bookmarks match, the table body shows a single row with the message "No bookmarks found."
+
+**Errors:**
+
+- Database read failure -> HTTP 500 with plain-text body "internal server error"
+
+### GET /health
+
+Health check endpoint for the server.
+
+**Accepts:** (no parameters)
+
+**Returns:** HTTP 200 with plain-text body "ok"
+
+**Errors:**
+
+- Server internal failure -> HTTP 500 with plain-text body "internal server error"
+
+## Constraints
+
+- Single file: all server logic lives in `src/web.rs`
+- Use `tiny_http` crate for the HTTP server — no async runtime required
+- HTML template and CSS are defined as `const &str` within `src/web.rs`; they are not read from disk at runtime
+- HTML must be valid and render correctly without JavaScript
+- CSS must be inline in the `<style>` tag within the HTML — no external stylesheets
+- The search form uses `method="get"` and `action="/"` so the query appears in the URL
+- Table columns: URL, Description, Tags
+
+## Examples
+
+### View all bookmarks
+
+**Input:**
+
+```
+GET / HTTP/1.1
+```
+
+**Output:**
+
+```
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+
+<!DOCTYPE html>
+<html>...table with all bookmarks...</html>
+```
+
+### Search bookmarks
+
+**Input:**
+
+```
+GET /?q=rust HTTP/1.1
+```
+
+**Output:**
+
+```
+HTTP/1.1 200 OK
+Content-Type: text/html; charset=utf-8
+
+<!DOCTYPE html>
+<html>...table filtered to bookmarks matching "rust"...</html>
+```
+
+## Acceptance Criteria
+
+- [ ] [ ] `GET /` returns all bookmarks as an HTML table
+- [ ] [ ] `GET /?q=<term>` returns only matching bookmarks
+- [ ] [ ] All HTML and CSS are embedded in the binary — no files read from disk
+- [ ] [ ] Bookmark URLs in the table are rendered as clickable `<a>` links
+- [ ] [ ] Empty result set shows "No bookmarks found." row instead of an empty table
+- [ ] [ ] `GET /health` returns 200 with body "ok"
+
+## Notes
+
+
+
+## Audit Findings (avoid these issues in planning)
+
+- [WARNING] Requirements > GET /, L28: The spec says 'all bookmarks are shown ordered by insertion time descending' when no query is present, but does not specify the ordering when a search query IS present. Two developers could reasonably implement search results ordered by insertion time descending, relevance score, or insertion time ascending, producing different user-visible behavior.
+- [WARNING] Requirements > GET /, L28: The substring match is defined as case-insensitive against 'url, desc, or tags' but 'tags' is ambiguous: it is unclear whether tags are matched as a single concatenated string, matched individually per-tag, or matched against a space/comma-separated serialization. For a bookmark with tags ['rust-lang', 'async'], a query of 'lang' would match under whole-string or per-tag-substring approaches but could behave differently depending on the delimiter assumed.
+- [WARNING] Requirements > GET /health, L46-L48: The /health endpoint error condition ('Server internal failure -> HTTP 500') is undefined for a static endpoint that only returns the string 'ok'. There is no meaningful failure path described, making it impossible to know what condition should trigger the 500 or what implementation code would produce it. This may lead one developer to add no error handling and another to add a database ping check.
+- [INFO] Requirements > GET /, L32: The spec requires the text input to be 'pre-filled with q' but does not address HTML-escaping of the q value in the input's value attribute. A query containing characters like `"`, `<`, or `>` could break the HTML or create injection artifacts in the rendered page.
+- [INFO] Requirements > GET /, L32: The spec requires bookmark URLs to be rendered as clickable <a> links but does not specify whether URL values should be HTML-escaped or sanitized before insertion into the href attribute. A stored URL containing characters like `"` or `'` could break the anchor tag structure.
+
+## Build Setup Command
+The following setup command runs before the first task:
+```
+['cargo init --name markman']
+```
+Do not generate tasks that duplicate what this command does.
