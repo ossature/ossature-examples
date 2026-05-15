@@ -1,0 +1,27 @@
+# .ossature/state.toml — Build state (auto-generated, do not edit)
+
+[meta]
+version = 2
+
+[tasks.001]
+input_hash = "sha256:de1ade5e8171b40ca97daf6f522dea9bfd495793b6cd7b1bce620d57348d43e5"
+output_hash = "sha256:b31471e071789069f3ac94f5fbc9472120c3e48140f2c5e73a7e4b12dba8c3fe"
+created_files = [
+    "conf.lua",
+]
+
+[tasks.002]
+input_hash = "sha256:f8f3efe2bd74f2b491197a82aeddce4fce555d32c07de58d8a7059d10a446488"
+output_hash = "sha256:1351f3d44b3988f8d1e2c48a38c6013365fc233434077396c59aa35684fe8b31"
+created_files = [
+    "wrong.ogg",
+    "correct.wav",
+    "game.lua",
+]
+
+[tasks.003]
+input_hash = "sha256:e7ca52bbe42d17eafb6876a80910d5186f2973ed069d6401367455976a41f85f"
+output_hash = "sha256:c03915c83b580ea1ee4f65d6cf2e5922ad7e601de83d23bf4ab224ee01b1680a"
+created_files = [
+    "main.lua",
+]

@@ -1,0 +1,86 @@
+{
+  "tasks": [
+    {
+      "kind": "task",
+      "title": "LÖVE2D Configuration",
+      "description": "Create conf.lua, the LÖVE2D configuration callback that sets window dimensions (1280×720), title ('Math Quest'), disables unused modules (joystick, physics), and enables audio. This runs before love.load and requires no other files.",
+      "outputs": [
+        "conf.lua"
+      ],
+      "depends_on": [],
+      "spec_refs": [
+        "Window Configuration",
+        "Constraints"
+      ],
+      "arch_refs": [
+        "Components > Configuration"
+      ],
+      "verify": [
+        "luac -p conf.lua"
+      ],
+      "context_files": []
+    },
+    {
+      "kind": "task",
+      "title": "Game Logic Module",
+      "description": "Implement game.lua — the core module containing all game state, particle system, problem generation, input handling, scoring/lives, timer, audio loading/playback, and rendering for all three game states (title, playing, gameover). Loads correct.wav and wrong.ogg as static audio sources. The particle system is hand-rolled (no love.graphics.newParticleSystem). Problem generation scales arithmetic difficulty with score. Handles minus-key suppression in love.keypressed (noting the LÖVE2D return value caveat). Timer expiry auto-submits: empty buffer = wrong, non-empty buffer = evaluate normally. Exports Game table with load/update/draw/keypressed/textinput.",
+      "outputs": [
+        "game.lua"
+      ],
+      "depends_on": [
+        1
+      ],
+      "spec_refs": [
+        "Overview",
+        "Goals",
+        "Game States",
+        "Problem Generation",
+        "Input Handling",
+        "Scoring and Lives",
+        "Background Animation",
+        "Audio",
+        "Constraints",
+        "Examples"
+      ],
+      "arch_refs": [
+        "Components > Game Logic",
+        "Data Models > Game State",
+        "Data Models > Particle",
+        "Flow",
+        "Dependencies",
+        "Notes"
+      ],
+      "verify": [
+        "luac -p game.lua"
+      ],
+      "context_files": [
+        "correct.wav",
+        "wrong.ogg"
+      ]
+    },
+    {
+      "kind": "task",
+      "title": "Main Entry Point",
+      "description": "Create main.lua, which requires game.lua and wires all LÖVE2D callbacks (love.load, love.update, love.draw, love.keypressed, love.textinput) to the corresponding Game module functions. Contains no game logic of its own.",
+      "outputs": [
+        "main.lua"
+      ],
+      "depends_on": [
+        1,
+        2
+      ],
+      "spec_refs": [
+        "Overview",
+        "Constraints"
+      ],
+      "arch_refs": [
+        "Components > Main Entry Point",
+        "Flow"
+      ],
+      "verify": [
+        "luac -p main.lua"
+      ],
+      "context_files": []
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+created_files = [
+    "wrong.ogg",
+    "correct.wav",
+    "game.lua",
+]
+success = true
+verify_output = ""
