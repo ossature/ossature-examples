@@ -1,3 +1,4 @@
+-- Called by LÖVE before love.load
 function love.conf(t)
     t.window.title = "Math Quest"
     t.window.width = 1280

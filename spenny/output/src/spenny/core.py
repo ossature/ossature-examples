@@ -1,6 +1,12 @@
 from decimal import Decimal
 from typing import NamedTuple
+from datetime import date
 from spenny.storage import ExpenseData, ExpenseRecord
+
+
+class SummaryResult(NamedTuple):
+    totals: dict[str, Decimal]
+    has_expenses: bool
 
 
 def add_expense(
@@ -10,46 +16,28 @@ def add_expense(
     description: str = "",
     date: str | None = None,
 ) -> tuple[ExpenseData, ExpenseRecord]:
-    """Add a new expense record to the data.
-    
-    Args:
-        data: Current expense data
-        amount: Expense amount (must be positive)
-        category: Expense category (must not be empty)
-        description: Optional expense description
-        date: ISO 8601 date string (required)
-        
-    Returns:
-        Tuple of updated ExpenseData and the created ExpenseRecord
-        
-    Raises:
-        ValueError: If amount is not positive or category is empty
-    """
     if amount <= 0:
         raise ValueError("Amount must be positive")
-    
     if not category:
         raise ValueError("Category cannot be empty")
-    
     if date is None:
-        raise ValueError("Date is required")
-    
-    # Create new expense record
+        raise ValueError("Date must be provided")
+
     expense_id = data["next_id"]
-    new_expense = ExpenseRecord(
-        id=expense_id,
-        date=date,
-        amount=str(amount),
-        category=category,
-        description=description
-    )
-    
-    # Update data
-    updated_data = ExpenseData(
-        next_id=expense_id + 1,
-        expenses=data["expenses"] + [new_expense]
-    )
-    
+    new_expense: ExpenseRecord = {
+        "id": expense_id,
+        "date": date,
+        "amount": str(amount),
+        "category": category,
+        "description": description,
+    }
+
+    updated_expenses = data["expenses"] + [new_expense]
+    updated_data: ExpenseData = {
+        "next_id": expense_id + 1,
+        "expenses": updated_expenses,
+    }
+
     return updated_data, new_expense
 
 
@@ -59,66 +47,35 @@ def list_expenses(
     start_date: str | None = None,
     end_date: str | None = None,
 ) -> list[ExpenseRecord]:
-    """List expenses with optional filtering.
-    
-    Args:
-        data: Current expense data
-        category: Optional category filter
-        start_date: Optional start date filter (inclusive)
-        end_date: Optional end date filter (inclusive)
-        
-    Returns:
-        List of matching ExpenseRecord objects
-    """
     expenses = data["expenses"]
-    
-    # Apply filters
-    filtered = expenses
+
+    filtered_expenses = expenses
     if category:
-        filtered = [e for e in filtered if e["category"] == category]
-    
+        filtered_expenses = [e for e in filtered_expenses if e["category"] == category]
     if start_date:
-        filtered = [e for e in filtered if e["date"] >= start_date]
-    
+        filtered_expenses = [e for e in filtered_expenses if e["date"] >= start_date]
     if end_date:
-        filtered = [e for e in filtered if e["date"] <= end_date]
-    
-    return filtered
+        filtered_expenses = [e for e in filtered_expenses if e["date"] <= end_date]
+
+    return filtered_expenses
 
 
 def delete_expense(
     data: ExpenseData,
     expense_id: int,
 ) -> ExpenseData:
-    """Delete an expense by ID.
-    
-    Args:
-        data: Current expense data
-        expense_id: ID of expense to delete
-        
-    Returns:
-        Updated ExpenseData with expense removed
-        
-    Raises:
-        ValueError: If expense_id not found
-    """
     expenses = data["expenses"]
-    
-    # Find and remove expense
     updated_expenses = [e for e in expenses if e["id"] != expense_id]
-    
+
     if len(updated_expenses) == len(expenses):
-        raise ValueError(f"Expense with ID {expense_id} not found")
-    
-    return ExpenseData(
-        next_id=data["next_id"],
-        expenses=updated_expenses
-    )
+        raise ValueError("Expense ID not found")
 
+    updated_data: ExpenseData = {
+        "next_id": data["next_id"],
+        "expenses": updated_expenses,
+    }
 
-class SummaryResult(NamedTuple):
-    totals: dict[str, Decimal]
-    has_expenses: bool
+    return updated_data
 
 
 def summarize(
@@ -126,32 +83,19 @@ def summarize(
     start_date: str | None = None,
     end_date: str | None = None,
 ) -> SummaryResult:
-    """Summarize expenses by category.
-    
-    Args:
-        data: Current expense data
-        start_date: Optional start date filter (inclusive)
-        end_date: Optional end date filter (inclusive)
-        
-    Returns:
-        SummaryResult with totals by category and has_expenses flag
-    """
     expenses = data["expenses"]
     has_expenses = len(expenses) > 0
-    
-    # Apply date filters
-    filtered = expenses
+
+    filtered_expenses = expenses
     if start_date:
-        filtered = [e for e in filtered if e["date"] >= start_date]
-    
+        filtered_expenses = [e for e in filtered_expenses if e["date"] >= start_date]
     if end_date:
-        filtered = [e for e in filtered if e["date"] <= end_date]
-    
-    # Calculate totals by category
-    totals = {}
-    for expense in filtered:
+        filtered_expenses = [e for e in filtered_expenses if e["date"] <= end_date]
+
+    totals: dict[str, Decimal] = {}
+    for expense in filtered_expenses:
         category = expense["category"]
         amount = Decimal(expense["amount"])
         totals[category] = totals.get(category, Decimal("0")) + amount
-    
-    return SummaryResult(totals=totals, has_expenses=has_expenses)
+
+    return SummaryResult(totals, has_expenses)

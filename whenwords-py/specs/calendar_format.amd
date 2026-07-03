@@ -1,7 +1,8 @@
+---
+spec: CALENDAR_FORMAT
+status: draft
+---
 # Architecture: Calendar Format
-
-@spec: CALENDAR_FORMAT
-@status: draft
 
 ## Overview
 

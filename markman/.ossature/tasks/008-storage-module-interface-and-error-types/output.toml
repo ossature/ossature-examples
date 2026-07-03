@@ -1,7 +1,0 @@
-files = [
-    "src/storage/types.rs",
-    "src/storage/mod.rs",
-    "src/lib.rs",
-]
-success = true
-verify_output = "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.01s"

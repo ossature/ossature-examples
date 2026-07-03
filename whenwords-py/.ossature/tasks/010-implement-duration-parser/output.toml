@@ -1,0 +1,6 @@
+created_files = [
+    "src/whenwords/parser.py",
+    "src/whenwords/duration.py",
+]
+success = true
+verify_output = ""

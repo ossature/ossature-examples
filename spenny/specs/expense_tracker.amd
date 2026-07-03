@@ -1,7 +1,8 @@
+---
+spec: EXPENSE_TRACKER
+status: draft
+---
 # Architecture: Expense Tracker
-
-@spec: EXPENSE_TRACKER
-@status: draft
 
 ## Overview
 

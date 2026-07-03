@@ -1,5 +1,0 @@
-files = [
-    "main.lua",
-]
-success = true
-verify_output = ""

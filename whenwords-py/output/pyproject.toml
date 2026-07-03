@@ -1,25 +1,30 @@
 [build-system]
-requires = ["setuptools>=61.0.0"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "whenwords-py"
 version = "0.0.1"
-description = "Pure Python functions for human-friendly date and time formatting."
+description = "Pure, side-effect-free utility functions for transforming timestamps and durations into human-friendly strings and parsing casual temporal inputs."
 readme = "README.md"
 requires-python = ">=3.12"
-license = { text = "MIT" }
-authors = [
-    { name = "Author Name", email = "author@example.com" }
-]
+license = {text = "MIT"}
 classifiers = [
+    "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.12",
     "License :: OSI Approved :: MIT License",
-    "Operating System :: OS Independent",
+]
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "PyYAML",
 ]
 
-[project.urls]
-Homepage = "https://github.com/example/whenwords-py"
+[tool.hatch.build.targets.wheel]
+packages = ["src/whenwords"]
+
 
 [tool.pytest.ini_options]
 pythonpath = ["src"]

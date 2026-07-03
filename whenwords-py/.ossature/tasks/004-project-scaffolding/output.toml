@@ -1,6 +1,0 @@
-files = [
-    "tests/__init__.py",
-    "src/whenwords/__init__.py",
-]
-success = true
-verify_output = ""

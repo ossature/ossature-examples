@@ -1,13 +1,22 @@
 """
-whenwords-py: Pure Python functions for human-friendly date and time formatting.
+whenwords-py
 
-This package provides two main modules:
-- Calendar Format: Converts timestamps into contextual date strings and abbreviates date ranges.
-- Relative Time: Formats durations into readable strings and parses human-written durations.
-
-All functions are pure, requiring explicit reference timestamps and avoiding side effects or I/O.
+Pure, side-effect-free utility functions for transforming timestamps and durations
+into human-friendly strings and parsing casual temporal inputs.
 """
 
-# Import modules for easier access
-from . import calendar  # type: ignore
-from . import relative  # type: ignore
+__version__ = "0.0.1"
+
+from whenwords.calendar import human_date, date_range
+from whenwords.duration import format_duration, parse_duration
+from whenwords.timeago import timeago
+from whenwords.relative import duration
+
+__all__ = [
+    "human_date",
+    "date_range",
+    "format_duration",
+    "parse_duration",
+    "timeago",
+    "duration",
+]

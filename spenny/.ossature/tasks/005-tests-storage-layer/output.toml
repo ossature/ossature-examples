@@ -1,0 +1,5 @@
+created_files = [
+    "tests/test_storage.py",
+]
+success = true
+verify_output = "============================= test session starts ==============================\nplatform darwin -- Python 3.14.3, pytest-9.0.3, pluggy-1.6.0 -- /Users/beshr/src/code/ossature/.venv/bin/python\ncachedir: .pytest_cache\nrootdir: /Users/beshr/src/code/ossature-examples/spenny/output\nconfigfile: pyproject.toml\nplugins: cov-7.1.0, logfire-4.32.1, anyio-4.13.0\ncollecting ... collected 5 items\n\ntests/test_storage.py::test_load_missing_file_auto_creates_empty_store PASSED [ 20%]\ntests/test_storage.py::test_load_valid_json PASSED                       [ 40%]\ntests/test_storage.py::test_load_corrupted_json_exits_code_1 PASSED      [ 60%]\ntests/test_storage.py::test_save_writes_pretty_printed_json_with_string_amounts PASSED [ 80%]\ntests/test_storage.py::test_round_trip_fidelity PASSED                   [100%]\n\n============================== 5 passed in 0.01s ==============================="

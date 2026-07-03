@@ -1,0 +1,1 @@
+I have completed the implementation of the `timeago` formatting logic inside `src/whenwords/timeago.py`, exposed the interface cleanly through `src/whenwords/relative.py` and `src/whenwords/__init__.py`, and verified that all 140 tests pass successfully with 100% coverage on the new files.

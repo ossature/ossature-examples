@@ -1,0 +1,5 @@
+created_files = [
+    "src/spenny/cli.py",
+]
+success = true
+verify_output = "$ python -m py_compile src/spenny/cli.py\n$ python -c \"from spenny.cli import main\""

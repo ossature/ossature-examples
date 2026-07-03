@@ -1,1 +1,0 @@
-The file exactly matches the interface defined in the architecture, delegating all five LÖVE2D callbacks to the `Game` module with no additional logic.

@@ -1,6 +1,0 @@
-files = [
-    "src/whenwords/relative.py",
-    "src/whenwords/__init__.py",
-]
-success = true
-verify_output = ""

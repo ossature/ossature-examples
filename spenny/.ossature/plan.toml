@@ -2,8 +2,8 @@
 # Re-run `ossature audit --replan` to regenerate (discards manual edits)
 
 [meta]
-generated_at = "2026-03-10T18:09:18Z"
-total_tasks = 8
+generated_at = "2026-05-13T21:29:48Z"
+total_tasks = 7
 specs = [
     "EXPENSE_TRACKER",
 ]
@@ -11,29 +11,32 @@ specs = [
 [[task]]
 id = "001"
 spec = "EXPENSE_TRACKER"
-title = "Project Config & Package Scaffold"
-description = "Create pyproject.toml with project metadata, dependencies, and the spenny entry point. Also create the src/spenny/__init__.py package marker. This establishes the installable package structure under uv."
+title = "Project scaffold: pyproject.toml & package structure"
+description = "Create the pyproject.toml with project metadata, entry point, and dependency config (stdlib only, uv-managed). Also create the src/spenny/__init__.py package init file so the package is importable."
 outputs = [
     "pyproject.toml",
     "src/spenny/__init__.py",
 ]
 depends_on = []
 spec_refs = [
-    "EXPENSE_TRACKER:Goals",
-    "EXPENSE_TRACKER:Constraints",
+    "Goals",
+    "Constraints",
 ]
 arch_refs = [
-    "EXPENSE_TRACKER:Dependencies",
-    "EXPENSE_TRACKER:Overview",
+    "Dependencies",
 ]
 status = "done"
-verify = "uv run python -c 'import spenny'"
+verify = [
+    "test -f pyproject.toml",
+    "test -f src/spenny/__init__.py",
+    "python -c \"import tomllib; tomllib.load(open('pyproject.toml','rb'))\"",
+]
 
 [[task]]
 id = "002"
 spec = "EXPENSE_TRACKER"
-title = "Storage Layer"
-description = "Implement src/spenny/storage.py with ExpenseRecord and ExpenseData TypedDicts, plus load() and save() functions. load() returns a default empty structure if the file does not exist, raises a clean error message and exits with code 1 on corrupted JSON. save() pretty-prints with 2-space indent. Amounts are stored as strings."
+title = "Storage layer: load/save JSON persistence"
+description = "Implement src/spenny/storage.py with the ExpenseRecord and ExpenseData TypedDicts, plus load() and save() functions. load() creates an empty store if the file is missing, exits with code 1 on corrupted JSON. save() pretty-prints with 2-space indent. Amounts are stored/loaded as strings."
 outputs = [
     "src/spenny/storage.py",
 ]
@@ -41,15 +44,18 @@ depends_on = [
     "001",
 ]
 spec_refs = [
-    "EXPENSE_TRACKER:Data Persistence",
-    "EXPENSE_TRACKER:Constraints",
+    "Data Persistence",
+    "Constraints",
 ]
 arch_refs = [
-    "EXPENSE_TRACKER:Components > Storage",
-    "EXPENSE_TRACKER:Data Models > expenses.json",
+    "Components > Storage",
+    "Data Models",
 ]
 status = "done"
-verify = "uv run python -c 'from spenny.storage import load, save, ExpenseData, ExpenseRecord'"
+verify = [
+    "python -m py_compile src/spenny/storage.py",
+    "python -c \"from spenny.storage import load, save, ExpenseData, ExpenseRecord\"",
+]
 inject_files = [
     "pyproject.toml",
     "src/spenny/__init__.py",
@@ -58,8 +64,8 @@ inject_files = [
 [[task]]
 id = "003"
 spec = "EXPENSE_TRACKER"
-title = "Core Business Logic"
-description = "Implement src/spenny/core.py with add_expense(), list_expenses(), delete_expense(), and summarize(). Per the audit finding, add_expense() must require a non-None date string (the CLI is responsible for passing datetime.date.today().isoformat() so the core stays pure and deterministic). Validates amount > 0 and category non-empty, raising ValueError with clear messages rather than calling sys.exit (the CLI handles exit). SummaryResult NamedTuple carries totals and has_expenses. Amounts use decimal.Decimal throughout."
+title = "Core business logic: add, list, delete, summarize"
+description = "Implement src/spenny/core.py with pure functions: add_expense(), list_expenses(), delete_expense(), and summarize(). Defines SummaryResult NamedTuple. Per the audit finding, the CLI must always supply an explicit date string; if date is None the core raises ValueError to stay pure. Amounts use decimal.Decimal throughout. Filtering is inclusive on date ranges."
 outputs = [
     "src/spenny/core.py",
 ]
@@ -68,18 +74,21 @@ depends_on = [
     "002",
 ]
 spec_refs = [
-    "EXPENSE_TRACKER:Add an Expense",
-    "EXPENSE_TRACKER:List Expenses",
-    "EXPENSE_TRACKER:Delete an Expense",
-    "EXPENSE_TRACKER:Spending Summary",
-    "EXPENSE_TRACKER:Constraints",
+    "Add an Expense",
+    "List Expenses",
+    "Delete an Expense",
+    "Spending Summary",
+    "Constraints",
 ]
 arch_refs = [
-    "EXPENSE_TRACKER:Components > Core",
-    "EXPENSE_TRACKER:Data Models > expenses.json",
+    "Components > Core",
+    "Data Models",
 ]
 status = "done"
-verify = "uv run python -c 'from spenny.core import add_expense, list_expenses, delete_expense, summarize, SummaryResult'"
+verify = [
+    "python -m py_compile src/spenny/core.py",
+    "python -c \"from spenny.core import add_expense, list_expenses, delete_expense, summarize, SummaryResult\"",
+]
 inject_files = [
     "pyproject.toml",
     "src/spenny/__init__.py",
@@ -89,8 +98,8 @@ inject_files = [
 [[task]]
 id = "004"
 spec = "EXPENSE_TRACKER"
-title = "CLI Entry Point"
-description = "Implement src/spenny/cli.py with a main() function that wires argparse subcommands (add, list, delete, summary) to core functions. This is the only module that prints to stdout or calls sys.exit. The CLI supplies datetime.date.today().isoformat() as the date argument to add_expense() when --date is not provided. Catches ValueError from core functions and prints the error then exits with code 1. Formats the expense table and summary table with the column layout shown in the spec examples, displaying amounts as $X.XX."
+title = "CLI entry point: argparse subcommands"
+description = "Implement src/spenny/cli.py with main() wiring argparse subcommands (add, list, delete, summary) to core functions. The CLI supplies datetime.date.today() as the date string when none is provided by the user, satisfying the purity constraint. Formats output tables, confirmation messages, and error messages exactly as shown in spec examples. All printing and sys.exit calls live here only."
 outputs = [
     "src/spenny/cli.py",
 ]
@@ -100,20 +109,23 @@ depends_on = [
     "003",
 ]
 spec_refs = [
-    "EXPENSE_TRACKER:Add an Expense",
-    "EXPENSE_TRACKER:List Expenses",
-    "EXPENSE_TRACKER:Delete an Expense",
-    "EXPENSE_TRACKER:Spending Summary",
-    "EXPENSE_TRACKER:Constraints",
-    "EXPENSE_TRACKER:Examples",
-    "EXPENSE_TRACKER:Acceptance Criteria",
+    "Add an Expense",
+    "List Expenses",
+    "Delete an Expense",
+    "Spending Summary",
+    "Constraints",
+    "Examples",
+    "Acceptance Criteria",
 ]
 arch_refs = [
-    "EXPENSE_TRACKER:Components > CLI",
-    "EXPENSE_TRACKER:Flow",
+    "Components > CLI",
+    "Flow",
 ]
 status = "done"
-verify = "uv run python -c 'from spenny.cli import main'"
+verify = [
+    "python -m py_compile src/spenny/cli.py",
+    "python -c \"from spenny.cli import main\"",
+]
 inject_files = [
     "pyproject.toml",
     "src/spenny/__init__.py",
@@ -124,50 +136,60 @@ inject_files = [
 [[task]]
 id = "005"
 spec = "EXPENSE_TRACKER"
-title = "Storage Tests"
-description = "Write tests/test_storage.py with unit tests for load() and save(). Covers: load returns empty default when file absent, save writes valid pretty-printed JSON, load round-trips saved data correctly, load exits with code 1 on corrupted JSON. Uses tmp_path fixture to avoid touching the real filesystem."
+title = "Tests: storage layer"
+description = "Write tests/test_storage.py covering load() with a missing file (auto-creates empty store), load() with valid JSON, load() with corrupted JSON (exits code 1), save() writes pretty-printed JSON with string amounts, and round-trip fidelity."
 outputs = [
     "tests/test_storage.py",
 ]
 depends_on = [
+    "001",
     "002",
 ]
 spec_refs = [
-    "EXPENSE_TRACKER:Data Persistence",
+    "Data Persistence",
 ]
 arch_refs = [
-    "EXPENSE_TRACKER:Components > Storage",
+    "Components > Storage",
 ]
 status = "done"
-verify = "uv run python -m pytest tests/test_storage.py -v"
+verify = [
+    "python -m pytest tests/test_storage.py -v",
+]
 inject_files = [
+    "pyproject.toml",
+    "src/spenny/__init__.py",
     "src/spenny/storage.py",
 ]
 
 [[task]]
 id = "006"
 spec = "EXPENSE_TRACKER"
-title = "Core Logic Tests"
-description = "Write tests/test_core.py with unit tests for all four core functions. Covers: add_expense increments next_id and appends record, add_expense raises ValueError on non-positive amount or empty category, list_expenses filters by category and date range, delete_expense removes by ID and raises ValueError for missing ID, summarize returns correct per-category totals with has_expenses=True/False, summarize with date range returns empty totals when no matches but has_expenses=True."
+title = "Tests: core business logic"
+description = "Write tests/test_core.py covering: add_expense with valid inputs, zero/negative amount raises ValueError, empty category raises ValueError, date=None raises ValueError, list_expenses with no filter, category filter, start/end date filter, combined filters, delete_expense success, delete_expense with missing ID raises KeyError/ValueError, summarize with no expenses (has_expenses=False), summarize with expenses and no filter, summarize with date range filter that matches nothing (has_expenses=True, totals empty), overall total computation."
 outputs = [
     "tests/test_core.py",
 ]
 depends_on = [
+    "001",
     "002",
     "003",
 ]
 spec_refs = [
-    "EXPENSE_TRACKER:Add an Expense",
-    "EXPENSE_TRACKER:List Expenses",
-    "EXPENSE_TRACKER:Delete an Expense",
-    "EXPENSE_TRACKER:Spending Summary",
+    "Add an Expense",
+    "List Expenses",
+    "Delete an Expense",
+    "Spending Summary",
 ]
 arch_refs = [
-    "EXPENSE_TRACKER:Components > Core",
+    "Components > Core",
 ]
 status = "done"
-verify = "uv run python -m pytest tests/test_core.py -v"
+verify = [
+    "python -m pytest tests/test_core.py -v",
+]
 inject_files = [
+    "pyproject.toml",
+    "src/spenny/__init__.py",
     "src/spenny/storage.py",
     "src/spenny/core.py",
 ]
@@ -175,60 +197,37 @@ inject_files = [
 [[task]]
 id = "007"
 spec = "EXPENSE_TRACKER"
-title = "CLI Integration Tests"
-description = "Write tests/test_cli.py with end-to-end integration tests that invoke main() via argparse argument injection (monkeypatching sys.argv) against a temporary expenses.json path. Covers: add creates file and prints confirmation, list shows table and 'No expenses found.' when empty, list --category filters correctly, list --start-date/--end-date filters by range, delete removes expense and prints confirmation, delete unknown ID exits with code 1, summary shows per-category totals and overall total, summary with date range, summary on empty file prints correct message, invalid amount/category exit with code 1."
+title = "Tests: CLI integration"
+description = "Write tests/test_cli.py using subprocess or unittest.mock to exercise the CLI end-to-end: spenny add creates an expense and prints confirmation, spenny list prints table, spenny list --category filters, spenny list --start-date/--end-date filters, spenny delete removes and confirms, spenny summary shows per-category and overall totals, spenny summary --start-date/--end-date filters, invalid inputs produce error messages and exit code 1, missing expenses.json is auto-created."
 outputs = [
     "tests/test_cli.py",
 ]
 depends_on = [
+    "001",
     "002",
     "003",
     "004",
 ]
 spec_refs = [
-    "EXPENSE_TRACKER:Add an Expense",
-    "EXPENSE_TRACKER:List Expenses",
-    "EXPENSE_TRACKER:Delete an Expense",
-    "EXPENSE_TRACKER:Spending Summary",
-    "EXPENSE_TRACKER:Acceptance Criteria",
-    "EXPENSE_TRACKER:Examples",
+    "Add an Expense",
+    "List Expenses",
+    "Delete an Expense",
+    "Spending Summary",
+    "Acceptance Criteria",
+    "Examples",
 ]
 arch_refs = [
-    "EXPENSE_TRACKER:Components > CLI",
-    "EXPENSE_TRACKER:Flow",
+    "Components > CLI",
+    "Flow",
 ]
 status = "done"
-verify = "uv run python -m pytest tests/test_cli.py -v"
+verify = [
+    "python -m pytest tests/test_cli.py -v",
+]
 inject_files = [
+    "pyproject.toml",
+    "src/spenny/__init__.py",
     "src/spenny/storage.py",
     "src/spenny/core.py",
     "src/spenny/cli.py",
-]
-
-[[task]]
-id = "008"
-spec = "EXPENSE_TRACKER"
-title = "Full Test Suite Run"
-description = "Add a tests/__init__.py marker (if needed) and run the complete test suite to confirm all modules integrate correctly and all acceptance criteria pass. Also verify the installed CLI entry point resolves correctly."
-outputs = [
-    "tests/__init__.py",
-]
-depends_on = [
-    "005",
-    "006",
-    "007",
-]
-spec_refs = [
-    "EXPENSE_TRACKER:Acceptance Criteria",
-]
-arch_refs = [
-    "EXPENSE_TRACKER:Overview",
-    "EXPENSE_TRACKER:Dependencies",
-]
-status = "done"
-verify = "uv run python -m pytest tests/ -v && uv run spenny --help"
-inject_files = [
-    "tests/test_storage.py",
-    "tests/test_core.py",
-    "tests/test_cli.py",
 ]

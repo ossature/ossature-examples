@@ -1,0 +1,1 @@
+I will write the module code for `src/whenwords/duration.py` containing the `duration` function, and run pytest to verify everything passes.

@@ -35,6 +35,10 @@ from decimal import Decimal
 from typing import NamedTuple
 from spenny.storage import ExpenseData, ExpenseRecord
 
+class SummaryResult(NamedTuple):
+    totals: dict[str, Decimal]
+    has_expenses: bool
+
 def add_expense(
     data: ExpenseData,
     amount: Decimal,
@@ -58,10 +62,6 @@ def delete_expense(
 ) -> ExpenseData:
     ...
 
-class SummaryResult(NamedTuple):
-    totals: dict[str, Decimal]
-    has_expenses: bool
-
 def summarize(
     data: ExpenseData,
     start_date: str | None = None,
@@ -74,25 +74,18 @@ def summarize(
 
 ```python
 import argparse
-import sys
 from decimal import Decimal
-from datetime import date
 
-from spenny.core import (
-    add_expense,
-    list_expenses,
-    delete_expense,
-    summarize,
-)
-from spenny.storage import load, save
-
-def format_amount(amount_str: str) -> str:
+def format_amount(amount: Decimal) -> str:
     ...
 
-def print_expense_table(expenses: list[dict]) -> None:
+def format_expense_table(expenses: list) -> str:
     ...
 
-def print_summary(summary_result):
+def format_summary_table(summary_result) -> str:
+    ...
+
+def validate_date(date_str: str) -> None:
     ...
 
 def main() -> None:

@@ -2,8 +2,8 @@
 # Re-run `ossature audit --replan` to regenerate (discards manual edits)
 
 [meta]
-generated_at = "2026-03-10T19:33:23Z"
-total_tasks = 3
+generated_at = "2026-06-06T19:31:39Z"
+total_tasks = 4
 specs = [
     "MATH_QUEST",
 ]
@@ -11,27 +11,51 @@ specs = [
 [[task]]
 id = "001"
 spec = "MATH_QUEST"
-title = "LÖVE2D Configuration"
-description = "Create the conf.lua file that configures the LÖVE2D window (1280×720, non-resizable, titled 'Math Quest') and disables unused modules. This is the first file LÖVE loads before anything else."
+title = "Copy Audio Assets"
+description = "Copy correct.wav and wrong.ogg verbatim from the context directory to the project root directory so that they are loaded as static audio sources at runtime."
+outputs = [
+    "correct.wav",
+    "wrong.ogg",
+]
+depends_on = []
+spec_refs = [
+    "Audio",
+]
+arch_refs = [
+    "Data Models > Game State",
+]
+status = "done"
+verify = []
+source = [
+    "context://correct.wav",
+    "context://wrong.ogg",
+]
+
+[[task]]
+id = "002"
+spec = "MATH_QUEST"
+title = "LÖVE2D Window Configuration"
+description = "Create the conf.lua configuration file to customize the LÖVE2D window (title 'Math Quest', width 1280, height 720, non-resizable) and disable unused modules (joystick, physics) as outlined in the AMD."
 outputs = [
     "conf.lua",
 ]
 depends_on = []
 spec_refs = [
-    "MATH_QUEST:Window Configuration",
-    "MATH_QUEST:Constraints",
+    "Window Configuration",
 ]
 arch_refs = [
-    "MATH_QUEST:Components > Configuration",
+    "Components > Configuration",
 ]
 status = "done"
-verify = "luac -p conf.lua"
+verify = [
+    "luac -p conf.lua",
+]
 
 [[task]]
-id = "002"
+id = "003"
 spec = "MATH_QUEST"
-title = "Game Logic Module"
-description = "Create game.lua — the core module containing all game state, problem generation, input handling, scoring, timer, background particle animation, audio loading/playback, feedback flashes, and rendering for all three game states (title, playing, gameover). This single module implements the full game logic per the architecture's design of keeping all state in a local table. Audio assets (correct.wav, wrong.ogg) are loaded as static sources at startup. The particle system is hand-rolled. Difficulty scales with score. The minus key is consumed in keypressed and also filtered in textinput to address the audit finding about LÖVE2D not suppressing textinput from keypressed return values. Timer expiry auto-submits the buffer with sound effects matching the submission sequence."
+title = "Core Game Logic and Drawing Module"
+description = "Implement the main game.lua module. This module holds local state for mode, score, lives, current problem, input buffer, timer, feedback flash info, and particles list. It implements: (1) HSL-to-RGB particle system processing continuously independent of screen state, using at least 5 distinct soft colors; (2) arithmetic problem generation based on current score (ensuring positive results for subtraction); (3) gameplay pausing during the 0.5-second feedback flash (preventing input or countdown logic while particles still animate); (4) audio playback of correct.wav and wrong.ogg; (5) input validation via love.textinput (accepting only '0'-'9' characters in textinput and handling backspace/enter in keypressed) to avoid duplicate digit entries; (6) font and drawing operations utilizing LÖVE's built-in vector graphics. State mode constants must stick strictly to 'title', 'playing', and 'gameover'."
 outputs = [
     "game.lua",
 ]
@@ -39,56 +63,50 @@ depends_on = [
     "001",
 ]
 spec_refs = [
-    "MATH_QUEST:Overview",
-    "MATH_QUEST:Game States",
-    "MATH_QUEST:Problem Generation",
-    "MATH_QUEST:Input Handling",
-    "MATH_QUEST:Scoring and Lives",
-    "MATH_QUEST:Background Animation",
-    "MATH_QUEST:Audio",
-    "MATH_QUEST:Constraints",
-    "MATH_QUEST:Examples",
+    "Game States",
+    "Problem Generation",
+    "Input Handling",
+    "Scoring and Lives",
+    "Background Animation",
+    "Audio",
+    "Constraints",
 ]
 arch_refs = [
-    "MATH_QUEST:Components > Game Logic",
-    "MATH_QUEST:Data Models > Game State",
-    "MATH_QUEST:Data Models > Particle",
-    "MATH_QUEST:Flow",
-    "MATH_QUEST:Notes",
+    "Components > Game Logic",
+    "Data Models > Game State",
+    "Data Models > Particle",
 ]
 status = "done"
-verify = "luac -p game.lua"
-inject_files = [
-    "conf.lua",
+verify = [
+    "luac -p game.lua",
 ]
-context_files = [
+inject_files = [
     "correct.wav",
     "wrong.ogg",
 ]
 
 [[task]]
-id = "003"
+id = "004"
 spec = "MATH_QUEST"
-title = "Main Entry Point"
-description = "Create main.lua — the thin entry point that wires all LÖVE2D callbacks (love.load, love.update, love.draw, love.keypressed, love.textinput) to the Game module. Contains no logic of its own, just delegation."
+title = "Main Entry Point Integration"
+description = "Implement main.lua which requires 'game.lua' and maps all system-level LÖVE callbacks (love.load, love.update, love.draw, love.keypressed, love.textinput) cleanly to the Game module interfaces with zero extra logic."
 outputs = [
     "main.lua",
 ]
 depends_on = [
-    "001",
-    "002",
+    "003",
 ]
 spec_refs = [
-    "MATH_QUEST:Overview",
-    "MATH_QUEST:Game States",
+    "Input Handling",
+    "Overview",
 ]
 arch_refs = [
-    "MATH_QUEST:Components > Main Entry Point",
-    "MATH_QUEST:Flow",
+    "Components > Main Entry Point",
 ]
 status = "done"
-verify = "luac -p main.lua"
+verify = [
+    "luac -p main.lua",
+]
 inject_files = [
-    "conf.lua",
     "game.lua",
 ]

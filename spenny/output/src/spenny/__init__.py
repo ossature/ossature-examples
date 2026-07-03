@@ -1,2 +1,3 @@
-# Package marker for spenny
-"""Spenny is a command-line expense tracker."""
+"""Spenny: A lightweight command-line expense tracker."""
+
+__version__ = "0.1.0"

@@ -1,25 +1,34 @@
 # .ossature/state.toml — Build state (auto-generated, do not edit)
 
+[meta]
+version = 2
+
 [tasks.001]
-input_hash = "sha256:1557a6c1269727c683507673f23c2c74d83f207959207b2758c1be9987118557"
-output_hash = "sha256:b31471e071789069f3ac94f5fbc9472120c3e48140f2c5e73a7e4b12dba8c3fe"
-written_files = [
-    "conf.lua",
+input_hash = "sha256:40f2aaff3a91de5dae0ab3d89ce978eb87f079e9719a71af32fb6d2e2d11421d"
+output_hash = "sha256:16981a8095db912a4549f62b8c53f255c6e1dfa4ad61bfc536ba1f73cc401d8d"
+created_files = [
+    "correct.wav",
+    "wrong.ogg",
 ]
 
 [tasks.002]
-input_hash = "sha256:88d31cf72414741e2403d547ed912a15a334da185bbf822515b10a4811461798"
-output_hash = "sha256:d6caa8ede3a4977f5c5a8ed0963079942f43d7bdabb4bd1d8708c911bf9730fa"
-written_files = [
-    "wrong.ogg",
-    "correct.wav",
-    "main.lua",
-    "game.lua",
+input_hash = "sha256:00e4f3ab297675833e66b1e81a52f6530b0858fc5840b25a558838ba87975660"
+output_hash = "sha256:c8ab8e53af314a101f0f2ca0de40bc00482f1eaa61798b44d53c1d8e2941d3c7"
+created_files = [
+    "conf.lua",
 ]
 
 [tasks.003]
-input_hash = "sha256:7ea422c4afcf2abfae627bfdbf6a5bab0ebe29146818dae20f9c52fc8ac4f38c"
-output_hash = "sha256:1e0a93ce5717386ca09e82f3a913862cb4257c2febf0d9b53f92ab26c1b8fa5a"
-written_files = [
+input_hash = "sha256:c9bd936454cccfeb5cbee3cb9a61b52923d5e215d77a6d22fea11cdc7a22966f"
+output_hash = "sha256:064d20c77f27b06b1faf7f53b3dbfb2cbb61f1162d1b6af04c2b7fa38a4e9942"
+created_files = [
+    "game.lua",
+    "main.lua",
+]
+
+[tasks.004]
+input_hash = "sha256:19a48cb9a63c68741136014413d5d0e04f45ca08edccdf86e99359f74cc8ecb0"
+output_hash = "sha256:ca4432a1447bb8c16c88b14de967bb50e37962a756e43de681f0588ac122b1ae"
+created_files = [
     "main.lua",
 ]

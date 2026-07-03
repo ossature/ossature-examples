@@ -1,5 +1,0 @@
-files = [
-    "src/qoi.zig",
-]
-success = true
-verify_output = "Build Summary: 3/3 steps succeeded\ninstall cached\n+- install qoizig cached\n   +- compile exe qoizig Debug native cached 30ms MaxRSS:34M"

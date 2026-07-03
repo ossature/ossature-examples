@@ -1,0 +1,190 @@
+{
+  "tasks": [
+    {
+      "kind": "task",
+      "title": "Copy tests.yaml",
+      "description": "Copy tests.yaml from the context directory to the test workspace. This file is required to run the parameterized suite later.",
+      "outputs": [
+        "tests/tests.yaml"
+      ],
+      "depends_on": [],
+      "spec_refs": [
+        "Acceptance Criteria"
+      ],
+      "arch_refs": [
+        "Relative Time Tests"
+      ],
+      "verify": [],
+      "context_files": [],
+      "source": [
+        "tests.yaml"
+      ]
+    },
+    {
+      "kind": "task",
+      "title": "Scaffold Package Initializer",
+      "description": "Scaffold the main package initializer. This creates the primary module declaration for whenwords.",
+      "outputs": [
+        "src/whenwords/__init__.py"
+      ],
+      "depends_on": [],
+      "spec_refs": [
+        "overview"
+      ],
+      "arch_refs": [],
+      "verify": [
+        "python -m py_compile src/whenwords/__init__.py"
+      ],
+      "context_files": [],
+      "source": []
+    },
+    {
+      "kind": "task",
+      "title": "Implement Utility Math & Date Normalization",
+      "description": "Implement utility logic in utils.py. This includes a robust half-up rounding function (e.g. 2.5 rounds to 3) and a timestamp normalization helper that converts Unix seconds (int/float), ISO 8601 strings, and datetime.datetime objects into standard UTC float epoch timestamps. Naive datetimes and ISO strings should be treated as UTC.",
+      "outputs": [
+        "src/whenwords/utils.py"
+      ],
+      "depends_on": [
+        2
+      ],
+      "spec_refs": [
+        "Requirements > timeago",
+        "Constraints"
+      ],
+      "arch_refs": [
+        "Components > Relative Time Module"
+      ],
+      "verify": [
+        "python -m py_compile src/whenwords/utils.py"
+      ],
+      "context_files": [],
+      "source": []
+    },
+    {
+      "kind": "task",
+      "title": "Implement Duration Formatter",
+      "description": "Implement the core duration formatting logic in duration.py. Handles positive numbers of seconds, conversion, plurals, verbose and compact styles, max_units truncation, negative/NaN/Inf validations, and unit cascade rules (e.g. 12 months -> 1 year). For the rounding of the smallest displayed unit and cascade rules, follow standard half-up comparison.",
+      "outputs": [
+        "src/whenwords/duration.py"
+      ],
+      "depends_on": [
+        3
+      ],
+      "spec_refs": [
+        "Requirements > duration",
+        "Constraints",
+        "Examples > duration verbose",
+        "Examples > duration compact"
+      ],
+      "arch_refs": [
+        "Components > Relative Time Module"
+      ],
+      "verify": [
+        "python -m py_compile src/whenwords/duration.py"
+      ],
+      "context_files": [],
+      "source": []
+    },
+    {
+      "kind": "task",
+      "title": "Implement Timeago Relative Formatter",
+      "description": "Implement raw timeago formatting logic in timeago.py. Normalizes both the target timestamp and the reference timestamp, calculates the difference, and formats it as relative time (e.g. '3 hours ago' or 'in 5 minutes') based on unit thresholds. Invalid formats raise a ValueError.",
+      "outputs": [
+        "src/whenwords/timeago.py"
+      ],
+      "depends_on": [
+        3,
+        4
+      ],
+      "spec_refs": [
+        "Requirements > timeago",
+        "Examples > timeago basic",
+        "Examples > timeago future"
+      ],
+      "arch_refs": [
+        "Components > Relative Time Module"
+      ],
+      "verify": [
+        "python -m py_compile src/whenwords/timeago.py"
+      ],
+      "context_files": [],
+      "source": []
+    },
+    {
+      "kind": "task",
+      "title": "Implement Duration Parser",
+      "description": "Implement parse_duration in parser.py. Handles translation of human-written duration strings (compact, verbose with 'and', decimal, colon notation) into float or integer seconds. Case-insensitively parses unit aliases. Negative values, empty strings, bare numbers, or parseable unit failures raise ValueError. Parse colon inputs like '2:30' (h:mm) or '2:30:00' (h:mm:ss) robustly.",
+      "outputs": [
+        "src/whenwords/parser.py"
+      ],
+      "depends_on": [
+        3
+      ],
+      "spec_refs": [
+        "Requirements > parse_duration",
+        "Constraints",
+        "Examples > parse_duration mixed",
+        "Examples > parse_duration colon"
+      ],
+      "arch_refs": [
+        "Components > Relative Time Module"
+      ],
+      "verify": [
+        "python -m py_compile src/whenwords/parser.py"
+      ],
+      "context_files": [],
+      "source": []
+    },
+    {
+      "kind": "task",
+      "title": "Expose Main Relative Time APIs",
+      "description": "Create relative.py which exposes timeago, duration, and parse_duration functions by importing them from their respective module coordinates as specified by the module interface.",
+      "outputs": [
+        "src/whenwords/relative.py"
+      ],
+      "depends_on": [
+        4,
+        5,
+        6
+      ],
+      "spec_refs": [
+        "overview"
+      ],
+      "arch_refs": [
+        "Components > Relative Time Module"
+      ],
+      "verify": [
+        "python -m py_compile src/whenwords/relative.py"
+      ],
+      "context_files": [],
+      "source": []
+    },
+    {
+      "kind": "task",
+      "title": "Implement Relative Time Tests",
+      "description": "Create test_relative.py to load, parse, and drive the YAML-based test suite defined in tests.yaml using pytest. Verify complete compliance of all formatter, parser, and relative time-ago operations.",
+      "outputs": [
+        "tests/test_relative.py"
+      ],
+      "depends_on": [
+        1,
+        7
+      ],
+      "spec_refs": [
+        "Acceptance Criteria"
+      ],
+      "arch_refs": [
+        "Components > Relative Time Tests",
+        "Dependencies"
+      ],
+      "verify": [
+        "PYTHONPATH=src python -m pytest tests/test_relative.py"
+      ],
+      "context_files": [
+        "tests.yaml"
+      ],
+      "source": []
+    }
+  ]
+}

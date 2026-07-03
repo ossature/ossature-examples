@@ -1,31 +1,31 @@
 # Audit Report: math_quest v0.1.0
 
-**Date:** 2026-03-10T19:32:52Z
+**Date:** 2026-06-06T19:31:11Z
 **Specs:** MATH_QUEST
 
 ## MATH_QUEST Findings
 
-### WARNING: Requirements > Input Handling, line ~47 vs Architecture Documents > Components > Game Logic
+### WARNING: Requirements > Scoring and Lives, L82
 
-**Issue:** The spec says love.keypressed() must 'return true' to consume the minus key event, but in LÖVE2D, the love.keypressed callback's return value is not used by the framework to suppress subsequent love.textinput events. Returning true from love.keypressed does not prevent love.textinput from firing for the same keypress. The spec also says 'love.textinput() is not involved in minus-key suppression', but love.textinput will still receive '-' unless explicitly filtered there.
+**Issue:** There is an ambiguity regarding the 0.5-second feedback flash and the transition to the game-over screen when lives reach 0. It is unclear if the transition is delayed by 0.5 seconds to show the final red flash on the playing screen, or if the screen transitions to the game-over state immediately (and if so, whether the red flash is drawn on the game-over screen or bypassed completely).
 
-**Suggestion:** Either add a guard in Game.textinput(t) to reject non-digit characters (which would naturally block '-'), or set a flag in keypressed that textinput checks. Clarify that suppression requires cooperation from both callbacks, or simply specify that textinput only accepts characters '0'-'9' and ignores everything else.
+**Suggestion:** Clarify whether the 0.5-second feedback flash delays the transition to the 'game-over' state, or if the transition happens immediately with the red feedback flash drawn over the game-over screen.
 
-### WARNING: Requirements > Problem Generation
+### WARNING: Requirements > Input Handling, L72
 
-**Issue:** The spec says problems get progressively harder as the score increases and the problem generator accepts the current score to determine level, but the actual difficulty scaling algorithm is not defined. Two developers could produce very different difficulty curves (e.g., one might introduce multiplication at score 5, another at score 20; one might cap difficulty, another might not). This affects user-visible behavior for the target age range (6-12).
+**Issue:** The spec notes that 'gameplay key actions (numbers and Backspace)' are active in keypressed during the 'playing' state, but also states that love.textinput() validates and appends digits. In LÖVE2D, handling numerical keys in both callbacks (e.g. keypressed and textinput) causes duplicate numeric entries (such as typing '1' and getting '11').
 
-**Suggestion:** Define approximate level thresholds and which operations/operand ranges apply at each level. For example: score 0-4 = addition with operands 1-10, score 5-9 = addition/subtraction with operands 1-20, score 10+ = multiplication with operands 1-12.
+**Suggestion:** Explicitly define that love.keypressed only handles control actions like Backspace and Enter, while love.textinput is solely responsible for appending digit characters '0'-'9' to the input buffer during the playing state.
 
-### INFO: Architecture Documents > Components > Game Logic > Interface vs Architecture Documents > Notes
+### INFO: Architecture Documents (AMD) > Data Models > Game State, L88
 
-**Issue:** The architecture notes specify audio assets as 'correct.wav' and 'wrong.ogg' (different file formats), but does not explain why two different formats are used. This is not a problem per se, but if the context directory only contains one format variant, it would fail at runtime.
+**Issue:** There is a minor discrepancy in the string representation for the game-over state. The SMD uses 'game-over' (with a hyphen, e.g., L30, L40, L72) while the AMD uses 'gameover' (without a hyphen, e.g., L47, L88). This could lead to mismatched state comparisons causing runtime crashes or lockups.
 
-**Suggestion:** Confirm the exact filenames and formats of the bundled audio assets, or standardize on one format for both files.
+**Suggestion:** Standardize the game-over state string format (either 'game-over' or 'gameover') consistently across both the SMD and AMD.
 
-### WARNING: Requirements > Scoring and Lives > timer expiry behavior, line ~65
+### INFO: Requirements > Scoring and Lives, L82
 
-**Issue:** The spec says timer expiry submits the buffer for evaluation, and if non-empty it is 'evaluated normally'. However, the spec also says wrong answers cause a 'red flash' and play sfx_wrong. It is not stated whether timer expiry itself provides any distinct visual/audio feedback versus a normal wrong answer. More importantly, the submission sequence in Input Handling says sounds play on Enter press — it's ambiguous whether auto-submission on timer expiry should also play sound effects.
+**Issue:** The requirement specifies that during the 0.5-second feedback flash, 'gameplay updates (specifically the 10-second countdown timer) and user text input are paused'. Because the decorative background particle system is meant to run continuously and at a consistent frame rate, a naive pause of Game.update(dt) would incorrectly pause the background animation too.
 
-**Suggestion:** Clarify that timer-expiry auto-submission follows the same submission sequence as Enter (including sound effects and flash), or specify different behavior.
+**Suggestion:** Clarify that only gameplay mechanics (the timer countdown, answer checking, and keyboard input) are paused, whereas background particle simulation must continue to update using dt during the feedback flash.
 

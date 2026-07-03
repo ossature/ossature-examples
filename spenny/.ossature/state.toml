@@ -1,60 +1,56 @@
 # .ossature/state.toml — Build state (auto-generated, do not edit)
 
+[meta]
+version = 2
+
 [tasks.001]
-input_hash = "sha256:75530f7d7eda0c607a7f92bddf5b6428ee3cbba59b1594b8742c647dc4cfbe62"
-output_hash = "sha256:6575eb441ee10d35c100e50fbf9e6a6dbe7f5d028035b4fa75ddababf2773508"
-written_files = [
+input_hash = "sha256:bcd31a24efa91518364bac05f3ff3838eed872cd5feca9b0687a74f61442a5eb"
+output_hash = "sha256:40e4b6feef2dd5895d13285cce335508b7b2dab4db8d8674852afedf9c1c8439"
+created_files = [
     "pyproject.toml",
     "src/spenny/__init__.py",
-    "README.md",
 ]
 
 [tasks.002]
-input_hash = "sha256:b55ba11fb3243f4978e60f853292b47099c0dd7266fa2d928e2b62471b70e312"
-output_hash = "sha256:d0951814f5543cb315b6d4e8c97ccc8c54f52baa4ce1d082a148215eba003b54"
-written_files = [
+input_hash = "sha256:3f7d52c2ea9468b895c21157dddcb824c5b85eff2b6f54b0cc2dc31e843ccb26"
+output_hash = "sha256:56694f4467d910764e7a45114a74919327927be50d14482cd01a85f93a8ccc76"
+created_files = [
     "src/spenny/storage.py",
+    "src/__init__.py",
+    "README.md",
 ]
 
 [tasks.003]
-input_hash = "sha256:985d14780af42be4452801f79aa2723322497e07f353836841050e29d4f2ce8e"
-output_hash = "sha256:3137a7037c81ac15b0a9fbd4bcc6eda59d8d448530b7c07ff214f0b03af3b797"
-written_files = [
+input_hash = "sha256:23890a5475d523412ee2c37d020229eb71013834b4be038ce386fdc4993645c7"
+output_hash = "sha256:08fc7d9af691c087b23c3e38e6488deda99d83b7a41b9e4f4c73b85b2aeead6f"
+created_files = [
     "src/spenny/core.py",
 ]
 
 [tasks.004]
-input_hash = "sha256:135c0768299e600602207af408220ebbe60adb666e7496a8f21f690f28663c2b"
-output_hash = "sha256:f18b7aa223139beb688554462e35b398e75b0f96f602a302814b97ad764edc65"
-written_files = [
+input_hash = "sha256:e27ff01d978bb4329e5bc556c40a08727ee58600ac417ec0c2279c2bf3abdaaf"
+output_hash = "sha256:f25a5e628f65ba002d4da9e12531fb5ee2762715125ab9447b522ae3079daa3d"
+created_files = [
     "src/spenny/cli.py",
 ]
 
 [tasks.005]
-input_hash = "sha256:662ca88f3e772c8dfa5b4dbe4bb898df19a7e188f5e01a97f46db63dbf3cdb1d"
-output_hash = "sha256:78cbe1b38f812fa7aca0de90c72f2a86672748f02e235574e7652c99309d73e8"
-written_files = [
+input_hash = "sha256:1e1216c5601e175f5c04f5c867f471ab1517376e111b87242fb0ee719abdc0d6"
+output_hash = "sha256:236590e5b358792e2c8eeaac7076e63029de19808c5e38c4c4f95f51177a5d07"
+created_files = [
     "tests/test_storage.py",
-    "pyproject.toml",
 ]
 
 [tasks.006]
-input_hash = "sha256:13920826dfbb83cef011d854c5cb5a455aa9e30ce49cf41fd27021289a5bd8ec"
-output_hash = "sha256:9376415e96d82b5aece8254f67d5aaa3187a47cbe367c4c34e7e4d8335e8bd56"
-written_files = [
+input_hash = "sha256:cfdb57ded3ee6cf8363c890156e4c1395e9de4b9a5f2f3ba627a6278b69616bc"
+output_hash = "sha256:a8ee62c5933d0aaa678cc612540bf0412ac805069aabce2a11af335c661edd2e"
+created_files = [
     "tests/test_core.py",
 ]
 
 [tasks.007]
-input_hash = "sha256:85bc4cadf8e0b97bd0d776ba70e17bd1451549d65adb0703342064dfcb12d1f9"
-output_hash = "sha256:2facbcca0dc523a8dbab4fd3ab40b602dcdc9eb757971f9df9d397cd6c4ee60f"
-written_files = [
+input_hash = "sha256:005a51ca93f29c94f0cf303a57bf073a28d07c7e3ada606d96d865c74aecfa96"
+output_hash = "sha256:b8272c7fcd3b536af60005a113d9b5c621baa077f158a14b920c83cdc94d8e5b"
+created_files = [
     "tests/test_cli.py",
-]
-
-[tasks.008]
-input_hash = "sha256:02ae1eee7ad48a2becd0010cc53d2e2c3028e7929ea88f4b3fdd72dc604129f6"
-output_hash = "sha256:61a4a32ca9317d23be8c48b3af7d0c682108da4f5a9c83e8f7cd4571d0673872"
-written_files = [
-    "tests/__init__.py",
 ]

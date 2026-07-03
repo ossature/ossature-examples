@@ -1,5 +1,0 @@
-[sources]
-"./specs/storage.smd" = "sha256:3fdcba393b97d3f27a5db7ad24611578144aba816fc242c9bea3bbb50c99523d"
-"./specs/cli.smd" = "sha256:813221a7d138772976f67b1f1ef7f291b74122d8afafff3b6a22d576e28b2603"
-"./specs/webui.smd" = "sha256:0a8f28a15e52642a8d3bfe26def87ff5de1f7453968dfe42b3bfa44ceb82f537"
-"ossature.toml" = "sha256:89796fae1ae448b15bc398285b3ca5b72c08da5aa15f792ede0e25160ead49b3"

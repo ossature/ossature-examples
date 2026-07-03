@@ -1,9 +1,10 @@
+---
+id: CALENDAR_FORMAT
+status: draft
+priority: high
+depends: []
+---
 # Calendar Format
-
-@id: CALENDAR_FORMAT
-@status: draft
-@priority: high
-@depends: []
 
 ## Overview
 

@@ -1,4 +1,9 @@
+project_brief_input = "sha256:592d113bbb1b2290f80e9ae4d147dde0492d19af0718074b8bdeb23f6c424de1"
+
 [sources]
-"./specs/math_game.smd" = "sha256:15301aae7f050d3c5f6b0537cab1e6892bfd9b269b0ddcf39945433b6b89a263"
-"./specs/math_game.amd" = "sha256:b6e6d3d8d44545c458069d795aeb5889989b9df7915d058b60b58865ea0e7f87"
-"ossature.toml" = "sha256:729a9e05cb9bf2d0e2c14a58d5c8b5a31b2e07455542798c3fac6d063b5de756"
+"./specs/math_game.smd" = "sha256:f3f5a2bf2a7f7a822155c5d5362775ef4998af70c52964890f1b5187c6af36f2"
+"./specs/math_game.amd" = "sha256:d61eace9011c02c251df8e8c5d329e861a1a322f6a3a4cd3b31e582864e8800a"
+"ossature.toml" = "sha256:583a689b8c253c4efbdf46e8a72668dfa5fcc3ff74c70db293402d63bbda58f0"
+
+[brief_inputs]
+MATH_QUEST = "sha256:8e03a29bd6ac31f6defede5236e6f649013ca29d97d4b883007d96a05cfee51e"

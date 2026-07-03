@@ -12,8 +12,8 @@ dir = "output"
 language = "rust"
 
 [build]
-setup = "cargo init --name markman"
-verify = "cargo check"
+setup = ["cargo init --name markman"]
+verify = ["cargo check"]
 
 [llm]
-model = "anthropic:claude-haiku-4-5-20251001"
+model = "anthropic:claude-sonnet-4-6"

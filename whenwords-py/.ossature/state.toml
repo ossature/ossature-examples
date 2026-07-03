@@ -1,49 +1,105 @@
 # .ossature/state.toml — Build state (auto-generated, do not edit)
 
+[meta]
+version = 2
+
 [tasks.001]
-input_hash = "sha256:a42a32a51a23848c29e16e3d05f220756aa61410454ec8598714b44c243ef225"
-output_hash = "sha256:57aa900b137980dce44c28e7991dcfc48dcdb1f31d247f21d4d8e6d746154934"
-written_files = [
+input_hash = "sha256:2ba7729f1270b05feccfff0abf2654778475b95ef645ceca951adfef047bdea6"
+output_hash = "sha256:1c927bad106bcd868a0e6144e1143c9f98795c802fdde3a99a2e9ce88f80b258"
+created_files = [
     "pyproject.toml",
     "src/whenwords/__init__.py",
-    "tests/__init__.py",
+    "README.md",
 ]
 
 [tasks.002]
-input_hash = "sha256:d1106cf1d9247752ba2d3507f1db8a9d634d018db2c24d2deceec6d630cda866"
-output_hash = "sha256:b328a2bdc79f0f548d465821b5a475188b5d5f7b9a0d2816971a56eafd6891c2"
-written_files = [
-    "src/whenwords/calendar.py",
+input_hash = "sha256:43af872e606757950a0780585f06fd12ea9657a02bcee6dafce1e1d667aba3b1"
+output_hash = "sha256:dc1e6133006be1aa94e333abbf3a6b6bf3647d2ccd82a829d631739f7f7cc184"
+created_files = [
+    "tests/tests.yaml",
 ]
 
 [tasks.003]
-input_hash = "sha256:89ceb9eae6f59e7972665ce857b5e24c7ae224b8bfb7ee10982c6691fcdc84f8"
-output_hash = "sha256:cc3584e53029d8c4a332ba5c6f2f61fa62d1e21362890a554e6d858c9f6f7825"
-written_files = [
-    "tests/test_calendar.py",
+input_hash = "sha256:1e8cb0dbe862c900832df4e84249212b3833b90a29546e924ac18f9723ca599d"
+output_hash = "sha256:727a7091cf976534476eaa27ba85787b8ea5cd4f08104b92bc177feda13eb407"
+created_files = [
     "src/whenwords/calendar.py",
+    "src/whenwords/__init__.py",
+    "tests/test_calendar.py",
 ]
 
 [tasks.004]
-input_hash = "sha256:cd18dded0ce51687dbd7c104110dc03f0c892a1fd9a8db4d8458190066959697"
-output_hash = "sha256:ff3e1229f09f31c634226181fab382d9962aece6057019d028a9168efff86eb7"
-written_files = [
-    "tests/__init__.py",
-    "src/whenwords/__init__.py",
+input_hash = "sha256:740ba19e5f38d58d45b2ad45f11715a40006a4ae75606352c02d3c13cebacf77"
+output_hash = "sha256:91fe55230dc6831829622085069967452a110927b02a6f577f45f928c963756a"
+created_files = [
+    "tests/test_calendar.py",
+    "tests/conftest.py",
 ]
 
 [tasks.005]
-input_hash = "sha256:37dd193cc21cb2438da5a0f06249fea04bf3a7ff482a7fb92571c720be50deca"
-output_hash = "sha256:4205520fc311bc2f68ee03fc78d4e2f60ebde0b38801098b7f633c922cbbbac7"
-written_files = [
-    "src/whenwords/relative.py",
-    "src/whenwords/__init__.py",
+input_hash = "sha256:c6d1031650abba449ff54bb382a060879e5bc56bb717048506ced0eb44a82487"
+output_hash = "sha256:dc1e6133006be1aa94e333abbf3a6b6bf3647d2ccd82a829d631739f7f7cc184"
+created_files = [
+    "tests/tests.yaml",
 ]
 
 [tasks.006]
-input_hash = "sha256:22579cc33f38c079e665599a5a58da73e991cb244140108ae7e2818b388490dd"
-output_hash = "sha256:aecf95748388aa9b6407369236fa26d7305923eb4f56ec1b9069bb9e0a9c81d0"
-written_files = [
-    "tests/test_relative.py",
+input_hash = "sha256:ddc868fbedae64ee5c14d23f89d1959a105d092be32e8c3cadeba32c4123fb59"
+output_hash = "sha256:a75ea7563185f1144827ffdc3723eced57a7477d796f9314fb9ce770fc175b2a"
+created_files = [
+    "src/whenwords/__init__.py",
+]
+
+[tasks.007]
+input_hash = "sha256:610b079b85ce456873ccc51be544c834d25ce05793080cc37ff6207bf5cec56d"
+output_hash = "sha256:48381f3ab648d403380dc53f118c0762cb059cf5a828d288c52a01ea4b72d015"
+created_files = [
+    "src/whenwords/utils.py",
+    "tests/test_utils.py",
+]
+
+[tasks.008]
+input_hash = "sha256:60e058d1d7028ab0b74fab1db132205dd3525fae79d25e0123d12e1cfec90ee5"
+output_hash = "sha256:4ba57e3033ce8e3afd7e833c5d92898e30e7a40fa33916ec6436fcd9ab109a32"
+created_files = [
+    "src/whenwords/duration.py",
+    "tests/test_duration.py",
+]
+edited_files = [
+    "src/whenwords/__init__.py",
+]
+
+[tasks.009]
+input_hash = "sha256:9d523af671b4e7eacddd7d7b3f125969179347b817d5885634d76357005ffea4"
+output_hash = "sha256:29b7ae4ca536a3c7d6283d2457ac56b02ad4bb1ba19de9450b1778488f8ed82d"
+created_files = [
+    "src/whenwords/timeago.py",
     "src/whenwords/relative.py",
+    "tests/test_timeago.py",
+    "tests/test_relative.py",
+]
+edited_files = [
+    "src/whenwords/__init__.py",
+]
+
+[tasks.010]
+input_hash = "sha256:3832f0a636fccb3cd81e80ac28cbe7ae3b78066101e1e113a260b522d343faf4"
+output_hash = "sha256:b13e2030feada7c81f985ade770346c05431afb807d68ab9e3ad4d0f640681b2"
+created_files = [
+    "src/whenwords/parser.py",
+    "src/whenwords/duration.py",
+]
+
+[tasks.011]
+input_hash = "sha256:2d4ce88ec1bbd84840202a3276db667104dcc2cf2196c78d112f5d11fc3ac00b"
+output_hash = "sha256:7c238358f4c4225ca5721b5d4e29d4f82e886df350fad06bfdb3bcc1faa46f96"
+created_files = [
+    "src/whenwords/relative.py",
+]
+
+[tasks.012]
+input_hash = "sha256:37f34f1533ff526eb081a72fa0e5b46aa1184e5c8473331eb25204ea4652fbb5"
+output_hash = "sha256:90c0199abab7f2221526da3b7689a4f1635cac2e9f9132bf77f11232a8680d4b"
+created_files = [
+    "tests/test_relative.py",
 ]

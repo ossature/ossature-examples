@@ -1,6 +1,0 @@
-files = [
-    "src/image_io_test.zig",
-    "build.zig",
-]
-success = true
-verify_output = "Build Summary: 9/9 steps succeeded; 162/162 tests passed\ntest success\n+- run test 12 passed 1ms MaxRSS:1M\n|  +- compile test Debug native cached 55ms MaxRSS:34M\n+- run test success 1ms MaxRSS:1M\n|  +- compile test Debug native cached 55ms MaxRSS:34M\n+- run test 80 passed 3ms MaxRSS:2M\n|  +- compile test Debug native cached 55ms MaxRSS:34M\n+- run test 70 passed 2ms MaxRSS:2M\n   +- compile test Debug native cached 55ms MaxRSS:34M"

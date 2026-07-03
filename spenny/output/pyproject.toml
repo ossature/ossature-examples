@@ -5,14 +5,14 @@ build-backend = "hatchling.build"
 [project]
 name = "spenny"
 version = "0.1.0"
-description = "A command-line expense tracker"
+description = "A lightweight command-line expense tracker"
 readme = "README.md"
 requires-python = ">=3.14"
 license = "MIT"
 keywords = ["expense", "tracker", "cli"]
 authors = [{ name = "Author", email = "author@example.com" }]
 classifiers = [
-    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.14",
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
@@ -20,7 +20,5 @@ classifiers = [
 [project.scripts]
 spenny = "spenny.cli:main"
 
-[dependency-groups]
-dev = [
-    "pytest>=9.0.2",
-]
+[tool.uv]
+dev-dependencies = []

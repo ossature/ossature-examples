@@ -1,5 +1,0 @@
-files = [
-    "src/whenwords/calendar.py",
-]
-success = true
-verify_output = ""

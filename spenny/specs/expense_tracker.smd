@@ -1,9 +1,10 @@
+---
+id: EXPENSE_TRACKER
+status: draft
+priority: high
+depends: []
+---
 # Spenny — Command-Line Expense Tracker
-
-@id: EXPENSE_TRACKER
-@status: draft
-@priority: high
-@depends: []
 
 ## Overview
 

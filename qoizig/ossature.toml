@@ -12,7 +12,7 @@ dir = "output"
 language = "zig"
 
 [build]
-setup = "zig init -m"
+setup = ["zig init -m"]
 
 [llm]
-model = "anthropic:claude-opus-4-6"
+model = "openrouter:google/gemini-3.5-flash"

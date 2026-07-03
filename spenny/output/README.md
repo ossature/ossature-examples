@@ -1,3 +1,3 @@
 # Spenny
 
-A command-line expense tracker.
+A lightweight command-line expense tracker.
