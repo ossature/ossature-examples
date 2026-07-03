@@ -1,0 +1,12 @@
+project_brief_input = "sha256:4d09d4a8f4311e1bb4e156055347afccb80a5232ece7066ab32f50434fa57aed"
+
+[sources]
+"./specs/calendar_format.smd" = "sha256:f276fb40f41fd75730dcf38c5942a095aa6d1e034d744087fa0fdf094cbbedc3"
+"./specs/relative_time.smd" = "sha256:6b8f17805f03a133753103c6bad313a68d45829f93925357a44d5de684607ac2"
+"./specs/calendar_format.amd" = "sha256:26ad7641e7af39bd8fbd43d69cf59c5bd17edb10b2041a072e9fb14ec8f633c5"
+"./specs/relative_time.amd" = "sha256:dbd8be41231f6e2ce80b58a942e6c3a0d5d51ddb1d7c4daeafbae6a81f81b725"
+"ossature.toml" = "sha256:655f805386b5d59285daf69d8217579378f7496efcaf4dbef08c653f035e6179"
+
+[brief_inputs]
+CALENDAR_FORMAT = "sha256:e73d64fbe59279e9a6dfc8a5f971f9879ca124a13f0c2cfc9e95fb3a0115f32c"
+RELATIVE_TIME = "sha256:538fb4e991c7817ac431c21f9f60d892301d8e910eacf95efdfb6616aff15938"

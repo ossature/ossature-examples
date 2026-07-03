@@ -1,1 +1,0 @@
-`main.lua` created — it simply requires `game` and delegates each LÖVE2D callback to the corresponding `Game` function with no logic of its own.

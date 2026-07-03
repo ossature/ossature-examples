@@ -23,5 +23,5 @@ coverage_threshold = 80.0
 # max_fix_attempts = 3
 
 [llm]
-model = "mistral:devstral-latest"
-# model = "mistral:mistral-large-latest"
+model = "openrouter:google/gemini-3.5-flash"
+

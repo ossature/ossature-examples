@@ -1,0 +1,6 @@
+created_files = [
+    "game.lua",
+    "main.lua",
+]
+success = true
+verify_output = ""

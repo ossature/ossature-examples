@@ -38,9 +38,9 @@ L34: **Returns:** The appropriate screen rendered for the current state
 L35: 
 L36: **Title state:** Display the game name "Math Quest" in large centered text with "Press Enter to Start" below it. The background animation runs in all states.
 L37: 
-L38: **Playing state:** Show the current problem, an input field for the player's answer, the current score, and remaining lives. A countdown timer (configurable, default 10 seconds) ticks down for each problem. The timer resets to 10.0 seconds every time a new problem is generated. If the timer expires, it counts as a wrong answer.
+L38: **Playing state:** Show the current problem, an input field for the player's answer, the current score, and remaining lives. A countdown timer (configurable, default 10 seconds) ticks down for each problem. The timer resets to 10.0 seconds every time a new problem is generated. If the timer expires, the current input buffer is automatically submitted for evaluation (treated as a wrong answer if the buffer is empty, or evaluated for correctness normally if the buffer is non-empty).
 L39: 
-L40: **Game-over state:** Display "Game Over", the final score, and "Press Enter to Play Again". Pressing Enter returns to the title state.
+L40: **Game-over state:** Display "Game Over", the final score, and "Press Enter to Restart". Pressing Enter transitions directly to the playing state, starting a new game with score 0 and 3 lives.
 L41: 
 L42: ### Problem Generation
 L43: 
@@ -54,11 +54,11 @@ L50: **Problem Generation Algorithm:**
 L51: 
 L52: Level L is calculated as: L = score ÷ 5 (integer division)
 L53: 
-L54: For each problem, randomly select one of the three operations below:
+L54: For each problem, randomly select one of the eligible operations below (multiplication is only selectable when L >= 2, meaning only addition and subtraction are eligible for level L < 2):
 L55: 
 L56: 1. **Addition:** Both operands are randomly chosen from 1 to 10×(L+1)
 L57: 2. **Subtraction:** Minuend (first operand) = score + 10; subtrahend (second operand) randomly chosen from 1 to score (or 1 if score is 0). This ensures the first operand is always ≥ the second operand, yielding a non-negative result.
-L58: 3. **Multiplication:** Both operands are randomly chosen from 1 to (L+3)
+L58: 3. **Multiplication:** Both operands are randomly chosen from 1 to (L+9)
 L59: 
 L60: All problems must have non-negative integer answers. Division is excluded entirely. A random problem is chosen from the eligible set for the current level on each generation.
 L61: 
@@ -72,9 +72,9 @@ L68: - **Level 4+ (score ≥20):** Continued growth in operand ranges as L incre
 L69: 
 L70: ### Input Handling
 L71: 
-L72: The player types their answer using number keys (0-9). Backspace deletes the last digit. Enter submits the answer. The current typed input is displayed below the problem in large text, surrounded by square brackets (e.g., [ 46 ]). Negative answers are not accepted. If the player presses the minus/hyphen key, the `love.keypressed()` callback must check if `key == 'minus'` and consume the event (return true) without modifying the input buffer, preventing any character from being added and showing no error message. The `love.textinput()` callback is not involved in minus-key suppression; suppression is handled entirely in `love.keypressed()`.
+L72: The player types their answer using number keys (0-9). Backspace deletes the last digit. Enter submits the answer. The current typed input is displayed below the problem in large text, surrounded by square brackets (e.g., [ 46 ]). Negative answers are not accepted. The `love.textinput()` callback and gameplay key actions (numbers and Backspace) are only active and mapped to the input buffer when the game's actual state is 'playing', ensuring text input and editing are completely ignored during non-playing states (such as the 'title' or 'game-over' screens). The `love.textinput()` callback must validate input by discarding any non-digit character (only accepting '0'-'9'), preventing minus/hyphen or other non-numerical characters from being added to the input buffer, showing no error message.
 L73: 
-L74: When the player presses Enter during the playing state, the input buffer is submitted for evaluation. The submission sequence is as follows: (1) evaluate the answer for correctness, (2) update score and lives, (3) play the appropriate sound effect via `love.audio.play()` with the loaded `sfx_correct` Source if the answer is correct, or `sfx_wrong` if the answer is incorrect or the timer expired, (4) check if lives have reached 0 and transition to game-over state if needed, (5) clear the input buffer immediately before the next problem is generated. Sound effects are triggered asynchronously and continue to play even if a state transition occurs immediately after.
+L74: When the player presses Enter during the playing state, if the input buffer is empty, the press is ignored (doing nothing, costing no lives, and maintaining the current state). Otherwise, the input buffer is submitted for evaluation. The submission sequence is as follows: (1) evaluate the answer for correctness, (2) update score and lives, (3) play the appropriate sound effect via `love.audio.play()` with the loaded `sfx_correct` Source if the answer is correct, or `sfx_wrong` if the answer is incorrect (including an incorrect or empty timer-expiry submission), (4) check if lives have reached 0 and transition to game-over state if needed, (5) clear the input buffer immediately before the next problem is generated. Sound effects are triggered asynchronously and continue to play even if a state transition occurs immediately after.
 L75: 
 L76: **Accepts:** Keyboard events (number keys 0-9, Backspace, Enter)
 L77: 
@@ -82,7 +82,7 @@ L78: **Returns:** Updated input buffer displayed below the problem; answer submi
 L79: 
 L80: ### Scoring and Lives
 L81: 
-L82: The player starts with 3 lives. A correct answer adds 1 to the score. A wrong answer removes 1 life. When lives reach 0, transition to game-over state. Display a visual feedback flash on answer lasting 0.5 seconds: green flash for correct, red flash for wrong. Timer expiry submits whatever is currently in the input buffer for evaluation: if the buffer is empty, it is treated as an incorrect answer and causes a loss of life; if the buffer is non-empty, it is evaluated normally (correct or wrong).
+L82: The player starts with 3 lives. A correct answer adds 1 to the score. A wrong answer removes 1 life. When lives reach 0, transition to game-over state. Display a visual feedback flash on answer lasting 0.5 seconds: green flash for correct, red flash for wrong. During this 0.5-second feedback flash, gameplay updates (specifically the 10-second countdown timer) and user text input are paused, all keypress handling (specifically Enter for submission, Backspace, and numeric inputs) must be completely disabled and ignored, and the next problem is generated and its countdown timer is started only after the 0.5-second flash has fully completed. Timer expiry automatically submits whatever is currently in the input buffer, triggering the exact same 5-step evaluation sequence (steps 1 through 5) outlined in the Input Handling section: if the buffer is empty, it is treated as an incorrect answer and causes a loss of life; if the buffer is non-empty, it is evaluated normally (correct or wrong).
 L83: 
 L84: **Accepts:** Player's submitted answer (integer)
 L85: 
@@ -205,7 +205,7 @@ L201:
 L202: ## Acceptance Criteria
 L203: 
 L204: - Game launches with `love .` and displays the title screen
-L205: - Pressing Enter starts a new game with score 0 and 3 lives
+L205: - Pressing Enter on the title screen or game-over screen starts a new game with score 0 and 3 lives
 L206: - Problems are displayed with large readable text
 L207: - Player can type a numeric answer and submit with Enter
 L208: - Correct answers increment score, wrong answers decrement lives

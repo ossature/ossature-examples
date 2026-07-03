@@ -1,6 +1,0 @@
-created_files = []
-success = true
-verify_output = "Finished `dev` profile [unoptimized + debuginfo] target(s) in 0.00s"
-edited_files = [
-    "src/storage.rs",
-]

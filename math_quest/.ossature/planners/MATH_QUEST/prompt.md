@@ -48,7 +48,7 @@ Generate arithmetic problems appropriate to the player's current level using the
 
 ### Input Handling
 
-The player types their answer using number keys (0-9). Backspace deletes the last digit. Enter submits the answer. The current typed input is displayed below the problem in large text, surrounded by square brackets (e.g., [ 46 ]). Negative answers are not accepted. If the player presses the minus/hyphen key, the `love.keypressed()` callback must check if `key == 'minus'` and consume the event (return true) without modifying the input buffer, preventing any character from being added and showing no error message. The `love.textinput()` callback is not involved in minus-key suppression; suppression is handled entirely in `love.keypressed()`.
+The player types their answer using number keys (0-9). Backspace deletes the last digit. Enter submits the answer. The current typed input is displayed below the problem in large text, surrounded by square brackets (e.g., [ 46 ]). Negative answers are not accepted. The `love.textinput()` callback must validate input by discarding any non-digit character (only accepting '0'-'9'), preventing minus/hyphen or other non-numerical characters from being added to the input buffer, showing no error message.
 
 When the player presses Enter during the playing state, the input buffer is submitted for evaluation. The submission sequence is as follows: (1) evaluate the answer for correctness, (2) update score and lives, (3) play the appropriate sound effect via `love.audio.play()` with the loaded `sfx_correct` Source if the answer is correct, or `sfx_wrong` if the answer is incorrect or the timer expired, (4) check if lives have reached 0 and transition to game-over state if needed, (5) clear the input buffer immediately before the next problem is generated. Sound effects are triggered asynchronously and continue to play even if a state transition occurs immediately after.
 
@@ -173,7 +173,7 @@ Player loses last life
 ## Acceptance Criteria
 
 - [ ] Game launches with `love .` and displays the title screen
-- [ ] Pressing Enter starts a new game with score 0 and 3 lives
+- [ ] Pressing Enter on the title screen or game-over screen starts a new game with score 0 and 3 lives
 - [ ] Problems are displayed with large readable text
 - [ ] Player can type a numeric answer and submit with Enter
 - [ ] Correct answers increment score, wrong answers decrement lives
@@ -325,20 +325,22 @@ love.textinput  → Game.textinput(t) → append digit to input buffer
 
 All game state is held in a local table inside game.lua. No global variables. The particle system is hand-rolled (a simple table of particle structs updated each frame) — do not use love.graphics.newParticleSystem. Audio assets (`correct.wav`, `wrong.ogg`) are provided in the context directory and must be present in the output directory at runtime. Sound effects are loaded as static sources.
 
-## Audit Findings (avoid these issues in planning)
+## Audit Findings
+Account for the following findings when planning. Avoid generating tasks that would hit these known spec issues:
 
-- [WARNING] Requirements > Problem Generation, L57: The subtraction algorithm sets the minuend to `score + 10` and the subtrahend to a random value from 1 to `score` (or 1 if score is 0). At score 0, the subtrahend is always 1, making the only possible problem '10 - 1 = 9'. This is not random and produces a deterministic problem at level 0. More critically, the subtrahend upper bound grows linearly with score, while the minuend is also score+10, meaning the subtrahend can equal score, making the answer as low as 10 — but the operand ranges are tightly coupled to score rather than level L, unlike addition and multiplication. Two developers could implement this differently (e.g., one clamps subtrahend to max 1 when score=0, another returns a fixed problem).
-- [WARNING] Requirements > Input Handling, L72-L74: The spec states that `love.keypressed()` must consume the minus key event by returning `true`, but LÖVE2D's `love.keypressed` callback return value is not used by the framework — LÖVE2D does not support event consumption via return values from `love.keypressed`. The spec's instruction to 'return true' has no effect on `love.textinput`, meaning if the LÖVE2D runtime fires `love.textinput` for the minus key, the suppression described will be incomplete despite the spec claiming suppression is 'handled entirely in love.keypressed()'.
-- [WARNING] Requirements > Scoring and Lives, L82: The spec says timer expiry submits 'whatever is currently in the input buffer for evaluation: if the buffer is non-empty, it is evaluated normally (correct or wrong).' However, the Input Handling section (L74) defines the submission sequence as triggered by Enter. It is ambiguous whether a timer expiry that results in a correct answer increments the score or only deducts a life on wrong/empty. Two developers could reasonably disagree on whether a timer expiry with a correct buffer value should award a point.
-- [INFO] Requirements > Game States, L40: The game-over state says 'Pressing Enter returns to the title state', but the acceptance criteria (L205) says 'Pressing Enter starts a new game with score 0 and 3 lives', which implies transitioning to the playing state, not the title state. The game-over screen also says 'Press Enter to Play Again' (L197), which suggests restarting, not returning to the title.
-- [INFO] Requirements > Audio, L106-L108: The correct answer sound is specified as `correct.wav` and the wrong answer sound as `wrong.ogg`. These are two different formats. The spec does not clarify whether both files must exist or if the implementation should handle a missing file gracefully. A missing asset would cause a runtime error on `love.audio.newSource`.
+- [WARNING] Requirements > Scoring and Lives, L82: There is an ambiguity regarding the 0.5-second feedback flash and the transition to the game-over screen when lives reach 0. It is unclear if the transition is delayed by 0.5 seconds to show the final red flash on the playing screen, or if the screen transitions to the game-over state immediately (and if so, whether the red flash is drawn on the game-over screen or bypassed completely).
+- [WARNING] Requirements > Input Handling, L72: The spec notes that 'gameplay key actions (numbers and Backspace)' are active in keypressed during the 'playing' state, but also states that love.textinput() validates and appends digits. In LÖVE2D, handling numerical keys in both callbacks (e.g. keypressed and textinput) causes duplicate numeric entries (such as typing '1' and getting '11').
+- [INFO] Architecture Documents (AMD) > Data Models > Game State, L88: There is a minor discrepancy in the string representation for the game-over state. The SMD uses 'game-over' (with a hyphen, e.g., L30, L40, L72) while the AMD uses 'gameover' (without a hyphen, e.g., L47, L88). This could lead to mismatched state comparisons causing runtime crashes or lockups.
+- [INFO] Requirements > Scoring and Lives, L82: The requirement specifies that during the 0.5-second feedback flash, 'gameplay updates (specifically the 10-second countdown timer) and user text input are paused'. Because the decorative background particle system is meant to run continuously and at a consistent frame rate, a naive pause of Game.update(dt) would incorrectly pause the background animation too.
 
 ## Context Files
 
-The following files are available in the project's context directory. These are pre-existing assets (audio, images, reference code, documentation, etc.) that may be useful during implementation.
+The following files are available in the project's context directory. These are pre-existing assets (audio, images, reference code, documentation, and so on) that may be useful during implementation.
 
 - `.DS_Store` (application/octet-stream)
 - `correct.wav` (audio/wav)
 - `wrong.ogg` (audio/ogg)
 
-For each task, list any context files it needs in the `context_files` field. The build system will include text files in the prompt and provide tools for the implementer to copy binary assets to the appropriate location within the output directory (e.g. an `assets/` or `sounds/` subdirectory, wherever fits the project structure).
+Two ways to use them in a task. For files the LLM should READ as reference (example code, docs, spec snippets), list them in the task's `context_files` field. Text files get included in the task's prompt; binary assets are exposed via tools so the implementer can copy them into the output directory (often under `assets/` or `sounds/`).
+
+For files that should be copied verbatim with no transformation (binary assets, fixtures, reference data), emit a copy task instead. Set `source = ["context://<path-or-glob>"]` and leave `verify` empty. The build system copies matched files directly without calling the LLM. Source and output patterns pair 1:1 by index, and any `*` or `**` wildcard in source must align with one in outputs so each matched basename is preserved. Typical candidates are opaque/binary assets like `.mp3`, `.wav`, `.png`, `.ttf`, `.pdf`, fonts, and fixtures where the output is byte-identical to the context file.

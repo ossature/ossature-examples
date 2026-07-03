@@ -9,4 +9,4 @@ dir = "output"
 language = "lua"
 
 [llm]
-model = "anthropic:claude-sonnet-4-6"
+model = "openrouter:google/gemini-3.5-flash"

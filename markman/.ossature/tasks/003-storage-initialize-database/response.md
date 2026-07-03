@@ -1,3 +1,0 @@
-Build succeeds. Here's what was added to `src/storage.rs`:
-
-**`init_db`** opens (or creates) the SQLite file at `db_path` via `rusqlite::Connection::open`, mapping any open failure to `StorageError::Open`. It then runs `CREATE TABLE IF NOT EXISTS bookmarks(...)` with `execute_batch`, using the exact schema from the spec — `id` autoincrement PK, `url` unique non-null, `desc`/`tags` defaulting to `''`, and `created_at` defaulting to `datetime('now')`. Any DDL failure maps to `StorageError::Db`. On success it returns the live `Connection` for callers to use.

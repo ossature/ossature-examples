@@ -46,10 +46,10 @@ The implementation must handle the QOI file format, which consists of a 14-byte 
 - `u8` channels: 3 = RGB, 4 = RGBA
 - `u8` colorspace: 0 = sRGB with linear alpha, 1 = all channels linear
 
-The `colorspace` and `channels` fields are purely informative and do not change how data chunks are encoded.
+The `colorspace` and `channels` fields are purely informative and do not change how data chunks are encoded. When encoding from PPM/PAM (which carry no colorspace metadata), the encoder must write `0` (sRGB with linear alpha) to the `colorspace` header field by default. A CLI flag may be provided to override this value, but `0` must be used when no flag is specified.
 
 **End Marker:**
-- 0x00 00 00 00 00 00 00 01 (7 zero bytes + 0x01)
+- 7 zero bytes followed by 0x01 (total 8 bytes): 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x01
 
 **Pixel State:**
 The codec must maintain an array of the previously seen pixels `index[64]` to facilitate the `QOI_OP_INDEX` operation. The position index is calculated as:
@@ -71,23 +71,27 @@ Channel count is auto-detected from the input format: PPM P6 implies 3 (RGB), PA
 - A stdout message: `Encoded {width}x{height} image to {output}`.
 
 **Behavior:**
-1. Parse input file header (PPM/PAM).
+1. Parse input file header (PPM/PAM). The parsing logic must explicitly validate that the parsed 'maxval' header field is exactly 255. If it is any other value, print a descriptive error and safely exit with code 1. To prevent overflow when calculating the pixel buffer size, promote the parsed width and height to a larger integer type (such as `u64`) before multiplying. Perform overflow-checked multiplication when calculating the final buffer size (`width * height * channels`), validating it against reasonable limits or memory constraints, and safely exit with error code 1 if an overflow is detected.
 2. Allocate `QoiHeader` and fill metadata.
 3. Initialize pixel history `index[64]` to rgba(0,0,0,0). Initialize `previous_pixel` to `{r: 0, g: 0, b: 0, a: 255}`.
 4. Iterate through pixels (Left to Right, Top to Bottom):
    - Calculate `pos` hash.
-   - **Run check**: If current pixel matches `previous_pixel`, increment run counter. If run == 62 or next pixel differs, write `QOI_OP_RUN` (tag `b11`, 6-bit run with bias of -1, so run 1 is stored as 0) and reset run. Run-lengths 63 and 64 are illegal (reserved for QOI_OP_RGB/RGBA tags).
-   - **Index check**: If current pixel matches `index[pos]`, write `QOI_OP_INDEX` (tag `b00`, 6-bit index). A valid encoder must not issue 2 or more consecutive QOI_OP_INDEX chunks to the same index; use QOI_OP_RUN instead.
+   - **Chunk-type priority order**: checks must be applied in strict precedence — `QOI_OP_RUN` > `QOI_OP_INDEX` > `QOI_OP_DIFF` > `QOI_OP_LUMA` > `QOI_OP_RGB`/`QOI_OP_RGBA`. Once a higher-priority check matches, the remaining checks must be skipped for that pixel.
+   - **Run check**: If current pixel matches `previous_pixel`, increment run counter; if run reaches 62, the 62nd matching pixel is included in the flushed run — emit `QOI_OP_RUN` (tag `b11`, 6-bit run with bias of -1, so run 62 is stored as 61) encoding all 62 pixels, then reset run to 0. The loop then advances to the *next* pixel, which is processed fresh from the top of the loop (run check and all other chunk checks apply normally to it); it does not inherit any state from the flushed run. If current pixel differs from `previous_pixel` and run > 0, flush the accumulated run first by writing `QOI_OP_RUN`, reset run to 0, then continue processing the current pixel with the remaining chunk checks (Index, Diff, Luma, Fallback). The `QOI_OP_RUN` chunk byte ranges from 0xC0 (run=1) to 0xFD (run=62); byte values 0xFE and 0xFF are reserved for `QOI_OP_RGB` and `QOI_OP_RGBA` tags respectively and must never be emitted as run chunks, which is why the maximum encodable run length is 62.
+   - **Index check**: Only reached if the run check did not match. If current pixel matches `index[pos]`, write `QOI_OP_INDEX` (tag `b00`, 6-bit index).
    - **Diff check**: If `dr`, `dg`, `db` are each in [-2, 1] and alpha is unchanged, write `QOI_OP_DIFF` (tag `b01`, 2-bit per channel with bias of 2, e.g. -2 stored as 0, 1 stored as 3). Differences use wraparound: `1 - 2 = 255`, `255 + 1 = 0`.
    - **Luma check**: If `dg` is in [-32, 31] and `dr-dg`, `db-dg` are in [-8, 7] and alpha is unchanged, write `QOI_OP_LUMA` (tag `b10`, 6-bit green diff with bias of 32, 4-bit red/blue diffs with bias of 8). Differences use wraparound.
-   - **Fallback**: Write `QOI_OP_RGB` (tag `0xFE`, 3 bytes) if only RGB changed, or `QOI_OP_RGBA` (tag `0xFF`, 4 bytes) if alpha also changed.
-5. Update `index[pos]` and `previous_pixel`.
+   - **Fallback**: Write `QOI_OP_RGB` (tag `0xFE`, with a 3-byte payload for a total chunk size of 4 bytes inclusive of the tag byte) if alpha is unchanged; write `QOI_OP_RGBA` (tag `0xFF`, with a 4-byte payload for a total chunk size of 5 bytes inclusive of the tag byte) if alpha has changed.
+5. Update `index[pos]` with the current pixel and update `previous_pixel` to the current pixel — this is done for **every logical pixel**, regardless of which op was emitted. For `QOI_OP_RUN`: `previous_pixel` does not change during run accumulation (the run pixel is the same as `previous_pixel` by definition); `index[pos]` is updated on **every pixel in the run**, matching the reference implementation. In practice this is a repeated no-op after the first update (since `pos` and the pixel value are identical for all run pixels), but the update must be performed for each pixel to keep encoder index state consistent with the reference. For `QOI_OP_INDEX`: the current pixel is already stored at `index[pos]`, so the write is a no-op, but the update must still be performed unconditionally to avoid special-casing.
+   - **End-of-image run flush**: After the last pixel has been processed, if a run is still in progress (run > 0), it must be flushed by writing a `QOI_OP_RUN` chunk before proceeding to the end marker. There is no "next pixel" to trigger the flush naturally, so this is an explicit required step.
 6. Write 8-byte End Marker.
 7. Ensure all integer writes to the output are Big Endian.
 
 **Errors:**
 - Input file not found -> print error and exit code 1.
 - Invalid PPM/PAM header -> print error and exit code 1.
+- Maxval is not 255 -> print a descriptive error and exit code 1.
+- Dimensions/Buffer overflow -> if calculating `width * height * channels` during PPM/PAM encoding overflows (checked by promoting width and height to a larger integer type such as `u64` before multiplying and using overflow-checked multiplication) or exceeds reasonable limits, print error and exit code 1.
 - Mismatch between declared size and actual data -> print error and exit code 1.
 
 ### Decode Command (`qoizig decode`)
@@ -106,7 +110,7 @@ Output format is automatically determined from the QOI header's `channels` field
 
 **Behavior:**
 1. Read and validate the 14-byte header (check magic "qoif").
-2. Initialize output buffer, pixel index array (zero-initialized), and `previous_pixel` to `{r: 0, g: 0, b: 0, a: 255}`.
+2. Initialize output buffer, pixel index array (zero-initialized), and `previous_pixel` to `{r: 0, g: 0, b: 0, a: 255}`. To prevent overflow when calculating the pixel buffer size from the QOI header, promote `width` and `height` to a larger integer type (such as `u64`) before multiplying. Perform overflow-checked multiplication when calculating the final buffer size (`width * height * channels`), validating it against reasonable limits or memory constraints, and safely exit with error code 1 if an overflow is detected.
 3. Loop until all `width * height` pixels are decoded:
    - Read byte `b1`.
    - **Check 8-bit tags first** (they have precedence over 2-bit tags):
@@ -123,8 +127,9 @@ Output format is automatically determined from the QOI header's `channels` field
 
 **Errors:**
 - Invalid Magic Bytes -> print error "Not a QOI file" and exit code 1.
+- Buffer size overflow -> if calculating `width * height * channels` overflows (checked by promoting `width` and `height` to a larger integer type such as `u64` before multiplying and using overflow-checked multiplication) or exceeds reasonable limits, print error and exit code 1.
 - Truncated file / Unexpected EOF -> print error and exit code 1.
-- Invalid stream of chunks -> print error and exit code 1.
+- Invalid stream of chunks -> if any chunk would cause the total decoded pixel count to exceed `width*height`, treat it as an invalid stream and exit with error code 1 immediately, without partially applying the chunk. This applies to all chunk types: for `QOI_OP_RUN`, check before repeating pixels whether `(b1 & 0x3F) + 1` would push the count past the limit; for single-pixel ops (`QOI_OP_INDEX`, `QOI_OP_DIFF`, `QOI_OP_LUMA`, `QOI_OP_RGB`, `QOI_OP_RGBA`), if the pixel count is already at `width*height` when a new chunk byte is read (i.e. the end marker is expected but another data chunk appears instead), treat it as an invalid stream and exit with error code 1. Additionally, if all `width*height` pixels have been decoded but the 8-byte end marker (`0x00 00 00 00 00 00 00 01`) is absent or malformed, print error and exit code 1. (Streams that end before `width*height` pixels are decoded are covered by the truncated-file error above.)
 
 ### Standard Library Helpers
 
@@ -136,7 +141,7 @@ Since Zig 0.15.2 is required, the following standard library features must be ut
 **Returns:**
 - N/A (these are internal utilities used by the encoder and decoder).
 
-- **Byte Order**: `std.mem.readIntBig` and `std.mem.writeIntBig` for u32 fields.
+- **Byte Order**: Use standard library facilities for big-endian integer serialization (e.g. `std.mem.readInt` / `std.mem.writeInt` with an explicit `.big` endianness argument, or the equivalent API available in the target Zig version) for u32 fields.
 - **Allocation**: `std.heap.ArenaAllocator` for temporary buffer management during image processing.
 - **IO**: `std.fs.File` for read/write operations.
 

@@ -1,0 +1,101 @@
+{
+  "tasks": [
+    {
+      "kind": "task",
+      "title": "Scaffold: Project Config and Module Declaration",
+      "description": "Create pyproject.toml with python version constraints (>=3.12) and dev dependencies (pytest, PyYAML), and initialize the package namespace directory with src/whenwords/__init__.py.",
+      "outputs": [
+        "pyproject.toml",
+        "src/whenwords/__init__.py"
+      ],
+      "depends_on": [],
+      "spec_refs": [
+        "Overview",
+        "Constraints"
+      ],
+      "arch_refs": [
+        "Dependencies"
+      ],
+      "verify": [
+        "python -c \"import tomllib; tomllib.loads(open('pyproject.toml').read())\"",
+        "python -m py_compile src/whenwords/__init__.py"
+      ],
+      "context_files": [],
+      "source": []
+    },
+    {
+      "kind": "task",
+      "title": "Scaffold: Copy tests.yaml fixture",
+      "description": "Copy the standard YAML verification test suite context file to tests/tests.yaml.",
+      "outputs": [
+        "tests/tests.yaml"
+      ],
+      "depends_on": [],
+      "spec_refs": [
+        "Acceptance Criteria"
+      ],
+      "arch_refs": [
+        "Calendar Format Tests"
+      ],
+      "verify": [],
+      "context_files": [],
+      "source": [
+        "tests.yaml"
+      ]
+    },
+    {
+      "kind": "task",
+      "title": "Core: Calendar Formatting Functions",
+      "description": "Implement src/whenwords/calendar.py with UTC timezone normalizations, parsing of Unix, ISO 8601, and datetime inputs, and full logic for human_date as well as date_range as specified. Consult context tests.yaml to ensure correct behavior across expected relative day rules.",
+      "outputs": [
+        "src/whenwords/calendar.py"
+      ],
+      "depends_on": [
+        1
+      ],
+      "spec_refs": [
+        "human_date",
+        "date_range",
+        "Constraints",
+        "Examples",
+        "Acceptance Criteria"
+      ],
+      "arch_refs": [
+        "Calendar Format Module"
+      ],
+      "verify": [
+        "python -m py_compile src/whenwords/calendar.py"
+      ],
+      "context_files": [
+        "tests.yaml"
+      ],
+      "source": []
+    },
+    {
+      "kind": "task",
+      "title": "Tests: Calendar Parameterized Tests",
+      "description": "Implement tests/test_calendar.py which parses tests/tests.yaml and executes parameterized pytest assertions for both human_date and date_range.",
+      "outputs": [
+        "tests/test_calendar.py"
+      ],
+      "depends_on": [
+        1,
+        2,
+        3
+      ],
+      "spec_refs": [
+        "Acceptance Criteria"
+      ],
+      "arch_refs": [
+        "Calendar Format Tests"
+      ],
+      "verify": [
+        "python -m pytest tests/test_calendar.py"
+      ],
+      "context_files": [
+        "tests.yaml"
+      ],
+      "source": []
+    }
+  ]
+}

@@ -1,353 +1,413 @@
 local Game = {}
 
--- ─── Constants ────────────────────────────────────────────────────────────────
-local SCREEN_W     = 1280
-local SCREEN_H     = 720
-local MAX_LIVES    = 3
-local TIMER_MAX    = 10.0
-local FEEDBACK_DUR = 0.5
-local PARTICLE_COUNT = 80
-local PARTICLE_SPAWN_RATE = 6  -- new particles per second
-
--- Soft colors: saturation ≤ 0.7, lightness 0.4–0.9 (pre-converted to RGB)
-local PARTICLE_COLORS = {
-    { 0.55, 0.75, 1.00 },  -- soft blue
-    { 0.65, 1.00, 0.75 },  -- soft mint
-    { 1.00, 0.80, 0.55 },  -- soft peach
-    { 0.90, 0.65, 1.00 },  -- soft lavender
-    { 1.00, 0.90, 0.55 },  -- soft yellow
-    { 0.65, 0.90, 0.90 },  -- soft cyan
+-- Local state variables as dictated by architecture guidelines
+local state = {
+    mode = "title",        -- "title" | "playing" | "gameover"
+    score = 0,
+    lives = 3,
+    problem = {            -- Current problem
+        text = "",
+        answer = 0,
+    },
+    input = "",            -- Player's typed digits
+    timer = 10.0,          -- Seconds remaining
+    feedback = nil,        -- { r=r, g=g, b=b, timer=0.5, type="correct"|"wrong" } or nil
+    particles = {},        -- List of background particle tables
+    sfx_correct = nil,     -- love.audio.Source
+    sfx_wrong = nil,       -- love.audio.Source
 }
 
--- ─── Internal state ───────────────────────────────────────────────────────────
-local state = {}
+-- Expose state table reference to external modules
+Game.state = state
 
--- ─── Fonts ────────────────────────────────────────────────────────────────────
-local font_huge   -- title / game-over headings  (~72px)
-local font_large  -- problem text               (~56px)
-local font_medium -- answer input / score/lives (~40px)
-local font_small  -- general UI                 (~28px)
+-- Fonts cache
+local fonts = {}
 
--- ─── Particle helpers ─────────────────────────────────────────────────────────
-local function new_particle(x, y)
-    local col = PARTICLE_COLORS[love.math.random(#PARTICLE_COLORS)]
-    local speed = love.math.random() * 40 + 10
+-- Utility: HSL to RGB conversion helper (returns values in range [0, 1])
+local function hsl_to_rgb(h, s, l)
+    local c = (1 - math.abs(2 * l - 1)) * s
+    local x = c * (1 - math.abs((h / 60) % 2 - 1))
+    local m = l - c / 2
+    local r, g, b = 0, 0, 0
+    if 0 <= h and h < 60 then
+        r, g, b = c, x, 0
+    elseif 60 <= h and h < 120 then
+        r, g, b = x, c, 0
+    elseif 120 <= h and h < 180 then
+        r, g, b = 0, c, x
+    elseif 180 <= h and h < 240 then
+        r, g, b = 0, x, c
+    elseif 240 <= h and h < 300 then
+        r, g, b = x, 0, c
+    elseif 300 <= h and h < 360 then
+        r, g, b = c, 0, x
+    end
+    return r + m, g + m, b + m
+end
+
+-- Utility: Spawn a single particle
+local function spawn_particle(init_random_life)
+    local max_life = love.math.random(8, 15)
+    local life = init_random_life and (love.math.random() * max_life) or max_life
     local angle = love.math.random() * math.pi * 2
-    local life  = love.math.random() * 6 + 3
-    return {
-        x       = x  or love.math.random(0, SCREEN_W),
-        y       = y  or love.math.random(0, SCREEN_H),
-        dx      = math.cos(angle) * speed,
-        dy      = math.sin(angle) * speed,
-        r       = col[1],
-        g       = col[2],
-        b       = col[3],
-        alpha   = 0.0,
-        life    = life,
-        max_life= life,
-        radius  = love.math.random(2, 6),
-    }
+    local speed = love.math.random(10, 40) -- slow drift velocity in pixels/sec
+    
+    -- Generate soft decorative colors (saturation <= 0.7, lightness [0.4, 0.9])
+    local h = love.math.random(0, 359)
+    local s = love.math.random(30, 70) / 100
+    local l = love.math.random(40, 90) / 100
+    local r, g, b = hsl_to_rgb(h, s, l)
+    
+    table.insert(state.particles, {
+        x = love.math.random(0, 1280),
+        y = love.math.random(0, 720),
+        dx = math.cos(angle) * speed,
+        dy = math.sin(angle) * speed,
+        r = r, g = g, b = b,
+        alpha = 0,                 -- Starts at 0, faded in dynamically
+        life = life,
+        max_life = max_life,
+        radius = love.math.random(2, 6),
+    })
 end
 
-local function spawn_particles(n)
-    for _ = 1, n do
-        table.insert(state.particles, new_particle())
-    end
-end
-
--- ─── Problem generation ───────────────────────────────────────────────────────
+-- Utility: Progressive arithmetic generator based on player's current score
 local function generate_problem(score)
-    -- Level increases every 5 points; caps at level 10
-    local level = math.min(math.floor(score / 5) + 1, 10)
-
-    -- Operand range grows with level
-    local max_a = 5  + level * 5   -- 10..55
-    local max_b = 3  + level * 3   -- 6..33
-
-    -- Available operations: +, -, *  (division excluded per spec)
-    local ops
-    if level <= 2 then
-        ops = { "+" }
-    elseif level <= 4 then
-        ops = { "+", "-" }
+    local op = "+"
+    local a, b = 0, 0
+    
+    if score < 5 then
+        -- Level 1: Single digit additions (1 to 9)
+        a = love.math.random(1, 9)
+        b = love.math.random(1, 9)
+        op = "+"
+    elseif score < 10 then
+        -- Level 2: Two-digit addition or subtraction
+        local choice = love.math.random(1, 2)
+        if choice == 1 then
+            a = love.math.random(10, 30)
+            b = love.math.random(1, 15)
+            op = "+"
+        else
+            a = love.math.random(10, 30)
+            b = love.math.random(1, a) -- Guaranteed non-negative result
+            op = "-"
+        end
+    elseif score < 15 then
+        -- Level 3: Mix of Addition, Subtraction, and Single-digit Multiplication
+        local choice = love.math.random(1, 3)
+        if choice == 1 then
+            a = love.math.random(2, 9)
+            b = love.math.random(2, 9)
+            op = "x"
+        elseif choice == 2 then
+            a = love.math.random(15, 60)
+            b = love.math.random(10, 50)
+            op = "+"
+        else
+            a = love.math.random(15, 60)
+            b = love.math.random(1, a) -- Guaranteed non-negative result
+            op = "-"
+        end
     else
-        ops = { "+", "-", "*" }
+        -- Level 4: Complex Addition, Subtraction, Multiplication range [2-12], or Division
+        local choice = love.math.random(1, 4)
+        if choice == 1 then
+            a = love.math.random(15, 99)
+            b = love.math.random(15, 99)
+            op = "+"
+        elseif choice == 2 then
+            a = love.math.random(15, 99)
+            b = love.math.random(1, a) -- Guaranteed non-negative result
+            op = "-"
+        elseif choice == 3 then
+            a = love.math.random(2, 12)
+            b = love.math.random(2, 12)
+            op = "x"
+        else
+            -- Division designed to never have remainder
+            b = love.math.random(2, 11)
+            local quotient = love.math.random(2, 10)
+            a = quotient * b
+            op = "/"
+        end
     end
 
-    local op  = ops[love.math.random(#ops)]
-    local a, b, answer, text
-
+    local text = ""
+    local answer = 0
     if op == "+" then
-        a      = love.math.random(1, max_a)
-        b      = love.math.random(1, max_b)
+        text = string.format("%d + %d", a, b)
         answer = a + b
-        text   = a .. " + " .. b .. " = ?"
     elseif op == "-" then
-        a      = love.math.random(1, max_a)
-        b      = love.math.random(1, math.min(a, max_b))  -- b <= a → answer >= 0
+        text = string.format("%d - %d", a, b)
         answer = a - b
-        text   = a .. " - " .. b .. " = ?"
-    else  -- "*"
-        -- Keep multiplication reasonable for children
-        local max_m = math.min(level, 12)
-        a      = love.math.random(1, max_m)
-        b      = love.math.random(1, max_m)
+    elseif op == "x" then
+        text = string.format("%d x %d", a, b)
         answer = a * b
-        text   = a .. " × " .. b .. " = ?"
+    elseif op == "/" then
+        text = string.format("%d / %d", a, b)
+        answer = a / b
     end
 
     return { text = text, answer = answer }
 end
 
--- ─── Submit answer (shared by Enter key and timer expiry) ─────────────────────
-local function submit_answer()
-    local correct
+-- Utility: Play audio safely via a clone or restart mechanism
+local function play_sound(source)
+    if source then
+        local success, clone = pcall(function() return source:clone() end)
+        if success and clone then
+            clone:play()
+        else
+            source:play()
+        end
+    end
+end
 
-    if state.input == "" then
-        correct = false
-    else
-        local typed = tonumber(state.input)
-        correct = (typed == state.problem.answer)
+-- Utility: Submit current buffer or process time expiry
+local function evaluate_submission(is_expiry)
+    local ans = tonumber(state.input)
+    local is_correct = false
+    
+    if ans ~= nil then
+        is_correct = (ans == state.problem.answer)
     end
 
-    if correct then
+    if is_correct then
         state.score = state.score + 1
-        state.feedback = { color = { 0.2, 0.9, 0.3 }, timer = FEEDBACK_DUR }
-        love.audio.play(state.sfx_correct)
+        play_sound(state.sfx_correct)
+        state.feedback = { r = 0.1, g = 0.8, b = 0.1, timer = 0.5, type = "correct" }
     else
         state.lives = state.lives - 1
-        state.feedback = { color = { 0.9, 0.2, 0.2 }, timer = FEEDBACK_DUR }
-        love.audio.play(state.sfx_wrong)
+        play_sound(state.sfx_wrong)
+        state.feedback = { r = 0.8, g = 0.1, b = 0.1, timer = 0.5, type = "wrong" }
     end
 
     if state.lives <= 0 then
         state.mode = "gameover"
+        state.feedback = nil -- Clear feedback overlay if we transition directly to gameover
     end
-
-    -- Clear input and generate next problem regardless (even on gameover the
-    -- buffer should be clean for a potential restart)
-    state.input   = ""
-    state.timer   = TIMER_MAX
-    state.problem = generate_problem(state.score)
 end
 
--- ─── Game.load ────────────────────────────────────────────────────────────────
-function Game.load()
-    -- Fonts (scale default font via newFont with size)
-    font_huge   = love.graphics.newFont(72)
-    font_large  = love.graphics.newFont(56)
-    font_medium = love.graphics.newFont(40)
-    font_small  = love.graphics.newFont(28)
-
-    -- Audio
-    state.sfx_correct = love.audio.newSource("correct.wav", "static")
-    state.sfx_wrong   = love.audio.newSource("wrong.ogg",   "static")
-
-    -- Initial game state
-    state.mode     = "title"
-    state.score    = 0
-    state.lives    = MAX_LIVES
-    state.input    = ""
-    state.timer    = TIMER_MAX
+-- Utility: Start/Initiate a new gameplay loop
+local function start_game()
+    state.score = 0
+    state.lives = 3
+    state.input = ""
     state.feedback = nil
-    state.problem  = generate_problem(0)
-
-    -- Particles
-    state.particles      = {}
-    state.particle_accum = 0
-    spawn_particles(PARTICLE_COUNT)
+    state.timer = 10.0
+    state.problem = generate_problem(0)
+    state.mode = "playing"
 end
 
--- ─── Game.update ──────────────────────────────────────────────────────────────
+-- Exported LÖVE callbacks
+
+function Game.load()
+    -- Initialize state characteristics
+    state.mode = "title"
+    state.score = 0
+    state.lives = 3
+    state.input = ""
+    state.timer = 10.0
+    state.feedback = nil
+    state.particles = {}
+
+    -- Load built-in default font scaled up appropriately
+    fonts.title = love.graphics.newFont(64)
+    fonts.problem = love.graphics.newFont(48)
+    fonts.input = love.graphics.newFont(36)
+    fonts.ui = love.graphics.newFont(24)
+
+    -- Pre-populate continuous background particles with randomized lifespans
+    for i = 1, 80 do
+        spawn_particle(true)
+    end
+
+    -- Attempt to load SFX assets
+    local ok_correct, correct_src = pcall(love.audio.newSource, "correct.wav", "static")
+    if ok_correct then
+        state.sfx_correct = correct_src
+    end
+
+    local ok_wrong, wrong_src = pcall(love.audio.newSource, "wrong.ogg", "static")
+    if ok_wrong then
+        state.sfx_wrong = wrong_src
+    end
+end
+
 function Game.update(dt)
-    -- ── Particle update ──────────────────────────────────────────────────────
-    local alive = {}
-    for _, p in ipairs(state.particles) do
-        p.x    = p.x + p.dx * dt
-        p.y    = p.y + p.dy * dt
+    -- 1. Continuous Background Particle Updates (Must run independent of screen mode or flash pauses)
+    for i = #state.particles, 1, -1 do
+        local p = state.particles[i]
         p.life = p.life - dt
+        if p.life <= 0 then
+            table.remove(state.particles, i)
+        else
+            p.x = p.x + p.dx * dt
+            p.y = p.y + p.dy * dt
+            
+            -- Keep boundary within viewport limits (wrap gently if needed, or rely on normal lifespans)
+            if p.x < -20 then p.x = 1300 end
+            if p.x > 1300 then p.x = -20 end
+            if p.y < -20 then p.y = 740 end
+            if p.y > 740 then p.y = -20 end
 
-        if p.life > 0 then
-            -- Fade in for first 20% of life, fade out for last 20%
-            local frac = p.life / p.max_life
-            if frac > 0.8 then
-                p.alpha = (1 - frac) / 0.2 * 0.7
-            elseif frac < 0.2 then
-                p.alpha = frac / 0.2 * 0.7
-            else
-                p.alpha = 0.7
+            -- Soft fade in/out alpha calculations
+            local elapsed = p.max_life - p.life
+            local alpha = 0.5
+            if elapsed < 1.0 then
+                alpha = alpha * (elapsed / 1.0)
+            elseif p.life < 1.0 then
+                alpha = alpha * (p.life / 1.0)
             end
-            table.insert(alive, p)
-        end
-    end
-    state.particles = alive
-
-    -- Spawn new particles at steady rate
-    state.particle_accum = state.particle_accum + PARTICLE_SPAWN_RATE * dt
-    while state.particle_accum >= 1 do
-        table.insert(state.particles, new_particle())
-        state.particle_accum = state.particle_accum - 1
-    end
-
-    -- ── Feedback timer ───────────────────────────────────────────────────────
-    if state.feedback then
-        state.feedback.timer = state.feedback.timer - dt
-        if state.feedback.timer <= 0 then
-            state.feedback = nil
+            p.alpha = alpha
         end
     end
 
-    -- ── Problem timer (playing mode only) ────────────────────────────────────
+    -- Keep total background particles populated to 80
+    while #state.particles < 80 do
+        spawn_particle(false)
+    end
+
+    -- 2. Gameplay state update
     if state.mode == "playing" then
-        state.timer = state.timer - dt
-        if state.timer <= 0 then
-            state.timer = 0
-            submit_answer()
+        if state.feedback then
+            -- Pause countdown timer and updates during the feedback flash
+            state.feedback.timer = state.feedback.timer - dt
+            if state.feedback.timer <= 0 then
+                state.feedback = nil
+                state.input = ""
+                state.problem = generate_problem(state.score)
+                state.timer = 10.0
+            end
+        else
+            -- Process the 10-second countdown timer standardly
+            state.timer = state.timer - dt
+            if state.timer <= 0 then
+                evaluate_submission(true)
+            end
         end
     end
 end
 
--- ─── Drawing helpers ──────────────────────────────────────────────────────────
-local function draw_particles()
+function Game.draw()
+    -- Clear surface with a sleek near-black background
+    love.graphics.clear(0.06, 0.06, 0.08)
+
+    -- Draw continuous animated background particles
     for _, p in ipairs(state.particles) do
         love.graphics.setColor(p.r, p.g, p.b, p.alpha)
         love.graphics.circle("fill", p.x, p.y, p.radius)
     end
-end
 
-local function draw_centered_text(font, text, y, r, g, b, a)
-    love.graphics.setFont(font)
-    love.graphics.setColor(r or 1, g or 1, b or 1, a or 1)
-    local w = font:getWidth(text)
-    love.graphics.print(text, (SCREEN_W - w) / 2, y)
-end
-
-local function draw_title_screen()
-    draw_centered_text(font_huge,   "MATH QUEST",          220, 1.0, 0.85, 0.2)
-    draw_centered_text(font_medium, "Press Enter to Start", 360, 0.9, 0.9,  1.0)
-end
-
-local function draw_gameover_screen()
-    draw_centered_text(font_huge,   "GAME OVER",               200, 1.0, 0.3, 0.3)
-    draw_centered_text(font_medium, "Final Score: " .. state.score, 320, 1.0, 1.0, 1.0)
-    draw_centered_text(font_medium, "Press Enter to Restart",   410, 0.9, 0.9, 1.0)
-end
-
-local function draw_playing_screen()
-    -- ── Score & Lives ─────────────────────────────────────────────────────────
-    local lives_str = ""
-    for i = 1, state.lives do
-        lives_str = lives_str .. (i > 1 and "  " or "") .. "♥"
-    end
-
-    love.graphics.setFont(font_medium)
-    love.graphics.setColor(1, 1, 1, 1)
-    love.graphics.print("Score: " .. state.score, 40, 24)
-    local lives_label = "Lives: " .. lives_str
-    local lw = font_medium:getWidth(lives_label)
-    love.graphics.print(lives_label, SCREEN_W - lw - 40, 24)
-
-    -- ── Feedback flash overlay ────────────────────────────────────────────────
-    if state.feedback then
-        local fc = state.feedback.color
-        local alpha = (state.feedback.timer / FEEDBACK_DUR) * 0.25
-        love.graphics.setColor(fc[1], fc[2], fc[3], alpha)
-        love.graphics.rectangle("fill", 0, 0, SCREEN_W, SCREEN_H)
-    end
-
-    -- ── Problem text ─────────────────────────────────────────────────────────
-    draw_centered_text(font_large, state.problem.text, 260, 1.0, 1.0, 0.9)
-
-    -- ── Input buffer ─────────────────────────────────────────────────────────
-    local input_display = "[ " .. (state.input ~= "" and state.input or " ") .. " ]"
-    draw_centered_text(font_medium, input_display, 370, 0.6, 1.0, 0.8)
-
-    -- ── Timer bar ────────────────────────────────────────────────────────────
-    local bar_w      = 400
-    local bar_h      = 18
-    local bar_x      = (SCREEN_W - bar_w) / 2
-    local bar_y      = 470
-    local frac       = math.max(0, state.timer / TIMER_MAX)
-
-    -- Background track
-    love.graphics.setColor(0.3, 0.3, 0.3, 0.8)
-    love.graphics.rectangle("fill", bar_x, bar_y, bar_w, bar_h, 4, 4)
-
-    -- Filled portion: green → yellow → red
-    local r_bar = math.min(1, 2 * (1 - frac))
-    local g_bar = math.min(1, 2 * frac)
-    love.graphics.setColor(r_bar, g_bar, 0.1, 1)
-    love.graphics.rectangle("fill", bar_x, bar_y, bar_w * frac, bar_h, 4, 4)
-
-    -- Border
-    love.graphics.setColor(0.6, 0.6, 0.6, 0.9)
-    love.graphics.rectangle("line", bar_x, bar_y, bar_w, bar_h, 4, 4)
-end
-
--- ─── Game.draw ────────────────────────────────────────────────────────────────
-function Game.draw()
-    -- Dark background
-    love.graphics.clear(0.08, 0.08, 0.12, 1)
-
-    -- Particle layer (behind everything)
-    draw_particles()
-
+    -- Draw interfaces depending on state pattern
     if state.mode == "title" then
-        draw_title_screen()
-    elseif state.mode == "playing" then
-        draw_playing_screen()
-    elseif state.mode == "gameover" then
-        draw_gameover_screen()
-    end
+        -- Title Rendering
+        love.graphics.setFont(fonts.title)
+        love.graphics.setColor(1, 0.85, 0.3) -- Golden title color
+        love.graphics.printf("MATH QUEST", 0, 150, 1280, "center")
 
-    -- Reset color
-    love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.setFont(fonts.ui)
+        love.graphics.setColor(0.9, 0.9, 0.9)
+        love.graphics.printf("Test your arithmetic speed and mathematical limits!", 0, 260, 1280, "center")
+        love.graphics.printf("Complete dynamically escalating addition, subtraction, multiplication & division problems.", 0, 300, 1280, "center")
+        love.graphics.printf("A wrong answer or a 10s countdown expiry costs 1 life. You have 3 lives total.", 0, 340, 1280, "center")
+        love.graphics.printf("Input numbers with number keys, use Backspace to edit, and press Enter to submit.", 0, 380, 1280, "center")
+
+        love.graphics.setFont(fonts.problem)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf("Press [ ENTER ] to Start!", 0, 480, 1280, "center")
+
+    elseif state.mode == "playing" then
+        -- Gameplay Hud Rendering
+        love.graphics.setFont(fonts.ui)
+        love.graphics.setColor(0.9, 0.9, 0.9)
+        love.graphics.printf("SCORE: " .. state.score, 50, 30, 400, "left")
+        love.graphics.printf("LIVES: " .. state.lives .. " / 3", -50, 30, 1280, "right")
+
+        -- Timer Bar Graphic
+        love.graphics.setColor(0.15, 0.15, 0.2, 0.8)
+        love.graphics.rectangle("fill", 390, 80, 500, 16)
+        
+        local timer_ratio = math.max(0, math.min(1, state.timer / 10.0))
+        local tb_r, tb_g, tb_b = 0.2, 0.8, 0.2
+        if timer_ratio < 0.3 then
+            tb_r, tb_g, tb_b = 0.8, 0.2, 0.2
+        elseif timer_ratio < 0.6 then
+            tb_r, tb_g, tb_b = 0.8, 0.8, 0.2
+        end
+        love.graphics.setColor(tb_r, tb_g, tb_b, 0.9)
+        love.graphics.rectangle("fill", 390, 80, 500 * timer_ratio, 16)
+
+        -- Digital seconds printout
+        love.graphics.setFont(fonts.ui)
+        love.graphics.setColor(0.9, 0.9, 0.9)
+        love.graphics.printf(string.format("%.1fs", state.timer), 0, 105, 1280, "center")
+
+        -- Current mathematical challenge (font min 48px)
+        love.graphics.setFont(fonts.problem)
+        love.graphics.setColor(1, 1, 1)
+        love.graphics.printf(state.problem.text, 0, 260, 1280, "center")
+
+        -- Current typed input buffer (font min 36px)
+        love.graphics.setFont(fonts.input)
+        love.graphics.setColor(0.9, 0.8, 0.3)
+        love.graphics.printf("[ " .. state.input .. " ]", 0, 380, 1280, "center")
+
+        -- 0.5s visual correct/incorrect feedback flash overlay
+        if state.feedback then
+            local flash_alpha = 0.35 * (state.feedback.timer / 0.5)
+            love.graphics.setColor(state.feedback.r, state.feedback.g, state.feedback.b, flash_alpha)
+            love.graphics.rectangle("fill", 0, 0, 1280, 720)
+        end
+
+    elseif state.mode == "gameover" then
+        -- Game Over Screen Rendering
+        love.graphics.setFont(fonts.title)
+        love.graphics.setColor(0.9, 0.2, 0.2, 1)
+        love.graphics.printf("GAME OVER", 0, 180, 1280, "center")
+
+        love.graphics.setFont(fonts.problem)
+        love.graphics.setColor(1, 1, 1, 1)
+        love.graphics.printf("Final Score: " .. state.score, 0, 310, 1280, "center")
+
+        love.graphics.setFont(fonts.ui)
+        love.graphics.setColor(0.5, 0.8, 1)
+        love.graphics.printf("Press [ ENTER ] to Try Again!", 0, 440, 1280, "center")
+    end
 end
 
--- ─── Game.keypressed ─────────────────────────────────────────────────────────
 function Game.keypressed(key)
-    if key == "minus" then
-        -- Suppress minus/hyphen: consume event, do nothing
-        return
-    end
-
     if state.mode == "title" then
         if key == "return" or key == "kpenter" then
-            state.mode    = "playing"
-            state.score   = 0
-            state.lives   = MAX_LIVES
-            state.input   = ""
-            state.timer   = TIMER_MAX
-            state.feedback= nil
-            state.problem = generate_problem(0)
+            start_game()
         end
 
     elseif state.mode == "playing" then
+        -- Keypress editing inputs should be entirely ignored during the answer feedback flash
+        if state.feedback then return end
+
         if key == "backspace" then
-            if #state.input > 0 then
-                state.input = state.input:sub(1, -2)
-            end
+            state.input = string.sub(state.input, 1, -2)
         elseif key == "return" or key == "kpenter" then
-            submit_answer()
+            -- Submission ignored under empty buffer
+            if state.input ~= "" then
+                evaluate_submission(false)
+            end
         end
 
     elseif state.mode == "gameover" then
         if key == "return" or key == "kpenter" then
-            state.mode    = "title"
-            state.score   = 0
-            state.lives   = MAX_LIVES
-            state.input   = ""
-            state.timer   = TIMER_MAX
-            state.feedback= nil
-            state.problem = generate_problem(0)
+            start_game()
         end
     end
 end
 
--- ─── Game.textinput ───────────────────────────────────────────────────────────
 function Game.textinput(t)
+    -- Accept only digits for maths input buffer
     if state.mode ~= "playing" then return end
-    -- Only accept digit characters
+    if state.feedback then return end -- paused during visual feedback/flash animation
+
     if t:match("^%d$") then
         state.input = state.input .. t
     end

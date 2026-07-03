@@ -44,7 +44,7 @@ Generate arithmetic problems appropriate to the player's current level using the
 
 ### Input Handling
 
-The player types their answer using number keys (0-9). Backspace deletes the last digit. Enter submits the answer. The current typed input is displayed below the problem in large text, surrounded by square brackets (e.g., [ 46 ]). Negative answers are not accepted. If the player presses the minus/hyphen key, the `love.keypressed()` callback must check if `key == 'minus'` and consume the event (return true) without modifying the input buffer, preventing any character from being added and showing no error message. The `love.textinput()` callback is not involved in minus-key suppression; suppression is handled entirely in `love.keypressed()`.
+The player types their answer using number keys (0-9). Backspace deletes the last digit. Enter submits the answer. The current typed input is displayed below the problem in large text, surrounded by square brackets (e.g., [ 46 ]). Negative answers are not accepted. The `love.textinput()` callback must validate input by discarding any non-digit character (only accepting '0'-'9'), preventing minus/hyphen or other non-numerical characters from being added to the input buffer, showing no error message.
 
 When the player presses Enter during the playing state, the input buffer is submitted for evaluation. The submission sequence is as follows: (1) evaluate the answer for correctness, (2) update score and lives, (3) play the appropriate sound effect via `love.audio.play()` with the loaded `sfx_correct` Source if the answer is correct, or `sfx_wrong` if the answer is incorrect or the timer expired, (4) check if lives have reached 0 and transition to game-over state if needed, (5) clear the input buffer immediately before the next problem is generated. Sound effects are triggered asynchronously and continue to play even if a state transition occurs immediately after.
 
@@ -169,7 +169,7 @@ Player loses last life
 ## Acceptance Criteria
 
 - [ ] Game launches with `love .` and displays the title screen
-- [ ] Pressing Enter starts a new game with score 0 and 3 lives
+- [ ] Pressing Enter on the title screen or game-over screen starts a new game with score 0 and 3 lives
 - [ ] Problems are displayed with large readable text
 - [ ] Player can type a numeric answer and submit with Enter
 - [ ] Correct answers increment score, wrong answers decrement lives

@@ -1,8 +1,0 @@
-created_files = [
-    "tests/cli.rs",
-]
-success = true
-verify_output = "running 17 tests\ntest remove_missing_id_exits_2 ... ok\ntest list_empty_db ... ok\ntest add_missing_url_exits_2 ... ok\ntest add_basic ... ok\ntest add_with_desc_and_tags ... ok\ntest remove_negative_id_exits_2 ... ok\ntest list_format ... ok\ntest remove_non_integer_id_exits_2 ... ok\ntest remove_zero_id_exits_2 ... ok\ntest remove_unknown_id_exits_1 ... ok\ntest list_shows_bookmarks ... ok\ntest add_duplicate_url_exits_1 ... ok\ntest unknown_subcommand_exits_nonzero ... ok\ntest list_with_query_no_match ... ok\ntest list_with_query_matches ... ok\ntest remove_existing ... ok\ntest db_flag_uses_different_files ... ok\n\ntest result: ok. 17 passed; 0 failed; 0 ignored; 0 measured; 0 filtered out; finished in 0.22s\n\n\n    Finished `test` profile [unoptimized + debuginfo] target(s) in 0.02s\n     Running tests/cli.rs (target/debug/deps/cli-746fd8fa84fbfb6b)"
-edited_files = [
-    "Cargo.toml",
-]

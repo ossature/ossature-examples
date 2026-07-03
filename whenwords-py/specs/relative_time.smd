@@ -29,7 +29,7 @@ All functions are pure — no side effects, no I/O, no system clock access. The 
 ## Constraints
 
 - Python 3.12+ standard library only, no third-party dependencies
-- All timestamps are Unix seconds (integer or float); also accept `datetime` objects and ISO 8601 strings
+- All timestamps are Unix seconds (integer or float); also accept `datetime` objects and ISO 8601 strings. Timezone-naive datetimes or naive ISO 8601 strings are to be treated as UTC when converting to Unix epoch timestamps. Timezone-naive `datetime` objects must be forced to UTC (using `replace(tzinfo=timezone.utc)` or equivalent) before converting them to Unix timestamps or performing calculations.
 - Strings are UTF-8
 - Deterministic: same inputs always produce same output
 - Use half-up rounding (2.5 rounds to 3, 2.4 rounds to 2)
@@ -41,15 +41,20 @@ All functions are pure — no side effects, no I/O, no system clock access. The 
 
 Convert a timestamp difference into a human-readable relative time string. The reference timestamp represents "now" and must be passed explicitly.
 
-**Accepts:** timestamp (Unix seconds, datetime, or ISO 8601 string), reference (optional, defaults to timestamp yielding "just now")
+**Accepts:** timestamp (Unix seconds, datetime, or ISO 8601 string), reference (Unix seconds, datetime, or ISO 8601 string)
 
 **Returns:** A relative time string
 
 **Errors:**
 
 - Invalid timestamp format -> raise ValueError with descriptive message
+- Timestamp or reference is NaN or infinite -> raise ValueError with descriptive message
 
-Thresholds (evaluated with >= on lower bound):
+Threshold matching is performed using the raw, unrounded absolute difference in seconds to determine the threshold row. The raw difference is compared against the lower bound of each threshold (converting units to seconds: 1 minute = 60s, 1 hour = 3600s, 1 day = 86400s, 1 month = 30 days = 2,592,000s, 1 year = 365 days = 31,536,000s).
+
+Once a threshold row is matched, the formatted output value `{n}` is computed by dividing the raw difference by the destination unit's duration (e.g., 60s for minutes, 3600s for hours, 86400s for days, 30 days for months, 365 days for years) and rounding using the half-up rule. This can produce output values that match or exceed the lower bound of the next category (for example, a raw difference of 44.5 minutes, or 2670 seconds, is less than 45 minutes (2700s), so it matches the "90 seconds to 44 minutes" threshold and rounds to output "45 minutes ago").
+
+Thresholds (evaluated with >= on lower bound of raw seconds):
 
 | Difference | Output |
 |-----------|--------|
@@ -65,7 +70,7 @@ Thresholds (evaluated with >= on lower bound):
 | 320 to 547 days | "1 year ago" |
 | 548+ days | "{n} years ago" |
 
-Future times (negative difference) use "in {n} {units}" instead of "{n} {units} ago". The "just now" threshold also applies to near-future times (0 to 44 seconds in the future returns "just now").
+When `timestamp > reference` (future), format the output as "in {n} {units}". When `timestamp < reference` (past), format as "{n} {units} ago". The "just now" threshold also applies to near-future times (0 to 44 seconds in the future returns "just now").
 
 Edge cases: identical timestamps return "just now"; very large values cap at years with no overflow.
 
@@ -73,7 +78,7 @@ Edge cases: identical timestamps return "just now"; very large values cap at yea
 
 Format a number of seconds as a human-readable duration string. Not relative to any reference time.
 
-**Accepts:** seconds (non-negative number), options (optional object with `compact` bool defaulting to false and `max_units` int defaulting to 2)
+**Accepts:** seconds (non-negative number), and optional keyword arguments: `compact` (bool, default False), `max_units` (int, default 2)
 
 **Returns:** A formatted duration string
 
@@ -84,9 +89,11 @@ Format a number of seconds as a human-readable duration string. Not relative to 
 
 Units in descending order: years (365 days), months (30 days), days, hours, minutes, seconds. Only non-zero units are shown. The smallest displayed unit is rounded.
 
-Default (verbose) style joins units with ", " — e.g. "1 hour, 1 minute". Compact style uses short suffixes with space separator — e.g. "1h 1m". Zero seconds returns "0 seconds" (or "0s" in compact mode).
+The `max_units` parameter limits the count of actually formatted non-zero units. Only non-zero units are considered, and of those, only the largest `max_units` are displayed. Intermediate zero-value units are ignored and do not count toward the `max_units` limit (for example, with 31,536,001 seconds, `max_units=2` yields "1 year, 1 second" rather than truncating to "1 year").
 
-When `max_units` truncates output, the smallest displayed unit is rounded based on the remainder.
+Default (verbose) style joins units with ", " — e.g. "1 hour, 1 minute". Compact style uses short suffixes with space separator — e.g. "1h 1m" — using years ('y'), months ('mo'), days ('d'), hours ('h'), minutes ('m'), and seconds ('s'). Zero seconds returns "0 seconds" (or "0s" in compact mode).
+
+When `max_units` truncates output, the smallest displayed unit is rounded based on the remainder. If rounding causes the smallest displayed unit to overflow, the value must cascade upward to higher-order units (e.g., 60 minutes cascades to 1 hour, 24 hours to 1 day, 30 days to 1 month, 12 months cascades to 1 year, and 365 days to 1 year) to prevent displaying invalid boundary values like "60 minutes", "24 hours", or "12 months". Additionally, exactly 12 months (or equivalent '12mo' in compact style) must always cascade to 1 year ('1y'), despite the 5-day mathematical difference (360 days versus 365 days).
 
 ### parse_duration
 
@@ -102,10 +109,12 @@ Parse a human-written duration string into total seconds.
 - No parseable units found -> raise ValueError
 - Negative values -> raise ValueError
 - Bare number with no unit -> raise ValueError
+- Colon-notation minutes or seconds outside the standard [0, 59] range -> raise ValueError
+- Unrecognized non-whitespace or non-separator tokens -> raise ValueError
 
-Unit aliases (case-insensitive): seconds (s, sec, secs, second, seconds), minutes (m, min, mins, minute, minutes), hours (h, hr, hrs, hour, hours), days (d, day, days), weeks (w, wk, wks, week, weeks).
+Unit aliases (case-insensitive): seconds (s, sec, secs, second, seconds), minutes (m, min, mins, minute, minutes), hours (h, hr, hrs, hour, hours), days (d, day, days), weeks (w, wk, wks, week, weeks - 1 week = 7 days = 604,800 seconds), months (mo, mon, month, months - 1 month = 30 days), years (y, yr, yrs, year, years - 1 year = 365 days).
 
-Be liberal in accepting input: tolerate extra whitespace, mixed separators (commas, "and"), and case variations.
+Be liberal in accepting input: tolerate extra whitespace, mixed separators (commas, "and"), and case variations. However, any unrecognized non-whitespace or non-separator tokens (e.g., "3xyz" or "invalid_token") present in the input must result in a ValueError. For colon-notation durations (e.g., "h:mm" or "h:mm:ss"), the minutes and seconds components must be validated to fall within the standard [0, 59] range; values outside this range (e.g., "2:65") must trigger a ValueError.
 
 ## Examples
 
