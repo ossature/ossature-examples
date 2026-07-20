@@ -1,0 +1,136 @@
+---
+id: YEP
+status: draft
+priority: medium
+depends: []
+---
+
+# Yep
+
+## Overview
+
+yep is a cli tool that outputs an affirmative response, or a user-defined string of text continuously until killed by the user.
+
+By itself, the yes command outputs 'y' or whatever is specified as an argument, followed by a newline repeatedly until stopped by the user or otherwise killed; when piped into a command, it will continue until the pipe breaks (i.e., the program completes its execution). However, if the user enters a string after 'yes', yes will output the string the same as it would 'y', similar to echo. 
+
+## Goals
+
+- Output user specificed string (or a default affirmative) repeatedly to stdout, one line at a time
+- Continue output indefinitely until terminated or the output pipe closes
+- Accept an optional argument to customize the output string
+- Maximize throughput via buffered I/O for efficient piping to other commands
+- Remain minimal: single-purpose, no dependencies beyond the standard library
+
+## Non-Goals
+
+- Interactive prompts or user input during execution
+- Configuration files or persistent state
+- Multiple output formats (JSON, CSV, etc.)
+- Rate limiting or timed delays between outputs
+- Network functionality or remote output
+- Colorized or formatted terminal output
+
+## Requirements
+
+### Output Repeated String
+
+Continuously write a string to stdout, one line per iteration, until the process is terminated or stdout closes.
+
+**Accepts:** Zero or more string arguments. If omitted, defaults to "y". If multiple arguments are provided, they are concatenated with a single space separator.
+
+**Returns:** Writes the resulting string followed by a newline to stdout, repeated indefinitely.
+
+**Errors:**
+
+- Stdout write fails due to a broken pipe -> exit silently with code 0
+- Stdout write fails due to a non-broken-pipe I/O error (e.g., ENOSPC, EIO) -> exit with code 1
+- Invalid UTF-8 argument -> print error to stderr and exit with code 1
+
+## Constraints
+
+- No third-party dependencies, standard library only
+- Exit code 0 on success or broken pipe, exit code 1 on error
+- Output must be line-buffered or use large buffer flushes for throughput
+- Must handle SIGPIPE gracefully (no error on closed pipe)
+- No dynamic memory allocation per iteration (pre-allocate output buffer)
+- Argument must be valid UTF-8; reject invalid sequences at startup with an error
+- No trailing newline suppression option (always append newline)
+
+## Examples
+
+### Default Output
+
+**Input:**
+
+```sh
+yep | head -n 3
+```
+
+**Output:**
+
+```
+y
+y
+y
+```
+
+### Custom String
+
+**Input:**
+
+```sh
+yep "yep" | head -n 2
+```
+
+**Output:**
+
+```
+yep
+yep
+```
+
+### Empty String
+
+**Input:**
+
+```sh
+yep "" | head -n 3
+```
+
+**Output:**
+
+```
+(3 blank lines)
+```
+
+### Piping to Another Command
+
+**Input:**
+
+```sh
+yep | head -n 5 | cat -n
+```
+
+**Output:**
+
+```
+1	y
+2	y
+3	y
+4	y
+5	y
+```
+
+## Acceptance Criteria
+
+- Running yep with no arguments outputs y followed by a newline, repeatedly
+- Running yep "custom" outputs custom followed by a newline, repeatedly
+- Running yep "" | head -n 1 outputs a single blank line
+- Output terminates cleanly when piped to head -n 10 (exit code 0, no error message)
+- Passing invalid UTF-8 prints an error to stderr and exits with code 1
+- Throughput exceeds 1 GB/s when piped to /dev/null on modern hardware
+- Binary has no runtime dependencies
+
+## Notes
+
+No notes

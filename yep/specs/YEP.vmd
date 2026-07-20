@@ -1,0 +1,39 @@
+@spec YEP
+
+# yep streams forever by design, so only invocations that terminate on their
+# own can be pinned here. The invalid-UTF-8 rejection happens at argument
+# parsing and exits immediately, so it has expected values an author can
+# write down: exit code 1 and an error on stderr that names the problem.
+#
+# The streaming behaviors stay in ordinary test tasks with verify commands,
+# because checking them needs a bounding consumer or a pipe:
+# - default output ("y" repeatedly) and custom strings: yep | head -n 3
+# - multiple args joined with one space: yep foo bar | head -n 1
+# - empty string producing blank lines: yep "" | head -n 3
+# - broken pipe exiting 0 silently: yep | head -n 1; check exit status
+# - throughput over 1 GB/s: a timing harness, not fixed expected values
+# Tag those tasks with covers = ["Output Repeated String"] in plan.toml so
+# the coverage ledger counts them.
+
+# Three distinct ways bytes can fail UTF-8 validation: bytes that are never
+# valid anywhere (0xff, 0xfe), a lone continuation byte (0x80), and a lead
+# byte with a broken continuation (0xc3 0x28). The last scenario also checks
+# that validation covers every argument, not just the first.
+
+@covers "Output Repeated String"
+scenario rejects bytes that are never valid utf-8:
+when $ yep \xff\xfe
+then exit 1
+then stderr has "UTF-8"
+
+@covers "Output Repeated String"
+scenario rejects a lone continuation byte:
+when $ yep \x80
+then exit 1
+then stderr has "UTF-8"
+
+@covers "Output Repeated String"
+scenario rejects invalid utf-8 in any argument:
+when $ yep hello \xc3\x28
+then exit 1
+then stderr has "UTF-8"

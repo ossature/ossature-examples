@@ -1,0 +1,101 @@
+---
+spec: YEP
+status: draft
+---
+
+# Architecture: Yep
+
+## Overview
+
+A single-file Rust binary with two modules: argument parsing/validation and the output loop.
+
+## Components
+
+### Main
+
+@path: src/main.rs
+
+Entry point. Parses arguments from OS strings, validates UTF-8, and runs the output loop.
+
+**Interface:**
+
+````rust
+fn main() -> ExitCode
+fn parse_args() -> Result<String, ArgError>
+````
+
+**Contracts:**
+
+- main returns ExitCode::SUCCESS (0) on normal termination or broken pipe
+- main returns ExitCode::FAILURE (1) on invalid UTF-8 argument
+- main returns ExitCode::FAILURE (1) on non-broken-pipe IO errors (e.g., ENOSPC, EIO)
+- parse_args uses std::env::args_os() to retrieve raw OS strings
+- parse_args validates UTF-8 internally and returns ArgError::InvalidUtf8 on failure
+- parse_args concatenates multiple arguments with a single space separator
+- parse_args returns "y" when no arguments are provided
+
+**Depends on:** OutputLoop
+
+### OutputLoop
+
+@path: src/output.rs
+
+Handles buffered writing to stdout in a tight loop.
+
+**Interface:**
+
+````rust
+fn run(output: &str) -> Result<(), WriteError>
+fn fill_buffer(output: &str, buffer: &mut Vec<u8>) -> usize
+````
+
+**Contracts:**
+
+- run returns Ok(()) when stdout closes (broken pipe)
+- run pre-allocates a buffer and reuses it across iterations
+- fill_buffer packs as many copies of output+newline as fit in the buffer
+- If output+newline exceeds buffer capacity, buffer is resized to hold exactly one copy
+- fill_buffer always returns at least 1 (guaranteeing forward progress)
+
+**Depends on:** None
+
+## Data Models
+
+### ArgError
+
+````rust
+enum ArgError {
+    InvalidUtf8,
+}
+````
+
+### WriteError
+
+````rust
+enum WriteError {
+    Io(std::io::Error),
+}
+````
+
+## Flow
+
+````
+main()
+    -> parse_args()
+    -> validate_utf8()
+    -> OutputLoop::run()
+        -> fill_buffer() [once at startup]
+        -> loop { stdout.write_all(buffer) }
+    <- Ok(()) on SIGPIPE/broken pipe
+<- ExitCode::SUCCESS
+````
+
+## Dependencies
+
+- Rust stdlib: core functionality
+
+## Notes
+
+- Buffer size should be large (e.g., 8KB or 64KB) to maximize throughput
+- SIGPIPE handling: Rust's default behavior prints an error; override with `#[unix_sigpipe = "sig_dfl"]` or handle BrokenPipe error silently
+- The buffer pre-fill strategy (packing multiple "y\n" copies) avoids per-iteration allocations and syscalls
