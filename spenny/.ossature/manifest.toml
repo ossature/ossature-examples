@@ -1,9 +1,0 @@
-project_brief_input = "sha256:c7957dc5306d21ff910578766e1682aaebd88117364736389d81bc7e9d1ef15b"
-
-[sources]
-"./specs/expense_tracker.smd" = "sha256:1646c17d5139620331cef1066e4dcbdc4b251f5e2decbb5b934a2bc3171c27d6"
-"./specs/expense_tracker.amd" = "sha256:57f7a3e6f591df1c5a300c35a4be9128713151d81ab17526296a3729ec18c4ac"
-"ossature.toml" = "sha256:6a39ef8d6d3ee35af69a093b23b55530275c8aaec1e6010af90637a1cef2fc2b"
-
-[brief_inputs]
-EXPENSE_TRACKER = "sha256:be26566445e0eac88cbe71d6fd6f32ea2dfc4a5f0f463c1a7ddcae95500780b8"

@@ -1,6 +1,0 @@
-created_files = [
-    "correct.wav",
-    "wrong.ogg",
-]
-success = true
-verify_output = "Copied 2 file(s) from context to output."

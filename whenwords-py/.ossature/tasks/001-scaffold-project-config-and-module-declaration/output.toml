@@ -1,7 +1,0 @@
-created_files = [
-    "pyproject.toml",
-    "src/whenwords/__init__.py",
-    "README.md",
-]
-success = true
-verify_output = "$ python -c \"import tomllib; tomllib.loads(open('pyproject.toml').read())\"\n$ python -m py_compile src/whenwords/__init__.py"

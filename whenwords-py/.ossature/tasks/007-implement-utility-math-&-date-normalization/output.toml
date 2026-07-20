@@ -1,6 +1,0 @@
-created_files = [
-    "src/whenwords/utils.py",
-    "tests/test_utils.py",
-]
-success = true
-verify_output = ""

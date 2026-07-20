@@ -6,3 +6,7 @@ dist/
 wheels/
 *.egg-info
 .venv
+
+# Ossature build artifacts
+output/
+.ossature/

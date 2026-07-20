@@ -1,5 +1,0 @@
-created_files = [
-    "tests/tests.yaml",
-]
-success = true
-verify_output = "Copied 1 file(s) from context to output."

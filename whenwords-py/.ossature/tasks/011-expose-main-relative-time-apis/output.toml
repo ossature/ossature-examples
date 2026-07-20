@@ -1,5 +1,0 @@
-created_files = [
-    "src/whenwords/relative.py",
-]
-success = true
-verify_output = ""

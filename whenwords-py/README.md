@@ -17,7 +17,11 @@ specs/
 
 context/
 └── tests.yaml             # Language-agnostic test cases from whenwords
+```
 
+Building the example (see [Rebuilding](#rebuilding) below) generates an `output/src/whenwords/` tree along these lines:
+
+```
 output/src/whenwords/
 ├── __init__.py
 ├── relative.py            # timeago, duration, parse_duration
@@ -33,6 +37,8 @@ The original whenwords spec is available at [github.com/dbreunig/whenwords](http
 - **All tasks:** `mistral:devstral-latest`
 
 ## Try It
+
+Build the example first (see [Rebuilding](#rebuilding) below), then:
 
 ```bash
 cd output

@@ -1,7 +1,0 @@
-created_files = [
-    "src/whenwords/calendar.py",
-    "src/whenwords/__init__.py",
-    "tests/test_calendar.py",
-]
-success = true
-verify_output = ""

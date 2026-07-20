@@ -5,3 +5,7 @@
 .zig-cache/
 zig-out/
 *.o
+
+# Ossature build artifacts
+output/
+.ossature/

@@ -12,7 +12,11 @@ specs/
 
 context/
 └── qoi_specification.md   # The QOI format specification, provided as context
+```
 
+Building the example (see [Rebuilding](#rebuilding) below) generates an `output/src/` tree along these lines:
+
+```
 output/src/
 ├── main.zig               # CLI entry point
 ├── qoi.zig                # QOI types and constants
@@ -36,7 +40,7 @@ The build uses a custom setup step (`zig init -m`) configured in `ossature.toml`
 
 ## Try It
 
-Requires [Zig](https://ziglang.org/) 0.15.2+:
+Requires [Zig](https://ziglang.org/) 0.15.2+. Build the example first (see [Rebuilding](#rebuilding) below), then:
 
 ```bash
 cd output

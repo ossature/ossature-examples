@@ -14,7 +14,11 @@ specs/
 context/
 ├── correct.wav            # Correct answer sound effect
 └── wrong.ogg              # Wrong answer sound effect
+```
 
+Building the example (see [Rebuilding](#rebuilding) below) generates an `output/` tree along these lines:
+
+```
 output/
 ├── conf.lua               # LÖVE2D window configuration
 ├── main.lua               # Entry point, input handling, rendering
@@ -36,7 +40,7 @@ Two audio assets downloaded from [OpenGameArt](https://opengameart.org/) (licens
 
 ## Try It
 
-Make sure you've downloaded [LÖVE2D](https://love2d.org/) first:
+Make sure you've downloaded [LÖVE2D](https://love2d.org/) first. Build the example (see [Rebuilding](#rebuilding) below), then:
 
 ```bash
 cd output

@@ -11,7 +11,13 @@ specs/
 ├── cli.smd                # CLI subcommands and argument parsing
 ├── storage.smd            # SQLite persistence layer
 └── webui.smd              # Read-only web UI served from embedded HTML/CSS
+```
 
+This is the only example with multiple SMD specs and no AMD files. Ossature infers the architecture from the three specs and their dependency relationships during audit.
+
+Building the example (see [Rebuilding](#rebuilding) below) generates an `output/src/` tree along these lines:
+
+```
 output/src/
 ├── main.rs                # Entry point
 ├── lib.rs                 # Module declarations
@@ -25,8 +31,6 @@ output/src/
     └── tests.rs           # Command handler tests
 ```
 
-This is the only example with multiple SMD specs and no AMD files. Ossature infers the architecture from the three specs and their dependency relationships during audit.
-
 ## Model Configuration
 
 - **All tasks:** `anthropic:claude-haiku-4-5-20251001`
@@ -37,7 +41,7 @@ The build uses custom setup and verify steps configured in `ossature.toml`:
 
 ## Try It
 
-Requires [Rust](https://www.rust-lang.org/):
+Requires [Rust](https://www.rust-lang.org/). Build the example first (see [Rebuilding](#rebuilding) below), then:
 
 ```bash
 cd output

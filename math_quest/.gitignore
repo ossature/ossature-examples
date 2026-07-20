@@ -1,6 +1,3 @@
-.DS_Store
-.cargo
-
 # Ossature build artifacts
 output/
 .ossature/

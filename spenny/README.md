@@ -10,7 +10,11 @@ This project was created and built entirely with [Ossature](https://ossature.dev
 specs/
 ├── expense_tracker.smd    # What the tracker should do
 └── expense_tracker.amd    # How the code is organized
+```
 
+Building the example (see [Rebuilding](#rebuilding) below) generates an `output/` tree along these lines:
+
+```
 output/
 └── src/spenny/
     ├── cli.py             # Entry point, argparse subcommands
@@ -27,6 +31,8 @@ The project uses a mixed-model setup configured in `ossature.toml`:
 - **Code generation (all other tasks):** `mistral:devstral-latest`
 
 ## Try It
+
+Build the example first (see [Rebuilding](#rebuilding) below), then:
 
 ```bash
 cd output

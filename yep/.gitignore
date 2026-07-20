@@ -1,2 +1,6 @@
 # OS
 .DS_Store
+
+# Ossature build artifacts
+output/
+.ossature/
